@@ -24,6 +24,13 @@ class Table
   protected $className = '';
   protected $fields = null;
 
+  /**
+   * Constructor
+   * 
+   * @param [type] $database [description]
+   * @param string $ddl      [description]
+   * @param array  $options  [description]
+   */
   public function __construct($database, string $ddl='', array $options=[])
   {
     $this->database = $database;
@@ -39,10 +46,11 @@ class Table
     if (substr($this->className,-3,3)=='ies') {
       $this->className = rtrim($this->className,'ies').'y'; // eg: Properties -> Property
     } else {
-    if (substr($this->className,-2,2)=='es') {
-      $this->className = rtrim($this->className,'es').'s';  // eg: OrderStatuses -> OrderStatus
-    } else {
-      $this->className = rtrim($this->className,'s');       // eg: Customers -> Customer
+      if (substr($this->className,-2,2)=='es') {
+        $this->className = rtrim($this->className,'es').'s';  // eg: OrderStatuses -> OrderStatus
+      } else {
+        $this->className = rtrim($this->className,'s');       // eg: Customers -> Customer
+      }
     }
 
     # Extract fields
@@ -68,21 +76,42 @@ class Table
     }
   }
 
+  /**
+   * Get Table Name
+   * 
+   * @return [type] [description]
+   */
   public function getTableName()
   {
     return $this->tableName;
   }
 
+  /**
+   * Get class Name
+   * 
+   * @return [type] [description]
+   */
   public function getClassName()
   {
     return $this->className;
   }
 
+  /**
+   * Get all fields
+   * 
+   * @return [type] [description]
+   */
   public function getFields()
   {
     return $this->fields;
   }
 
+  /**
+   * Check if table has a field by the name
+   * 
+   * @param  string  $fieldName [description]
+   * @return boolean            [description]
+   */
   public function hasField(string $fieldName)
   {
     $hasField = false;
@@ -95,6 +124,5 @@ class Table
 
     return $hasField;
   }
-
 
 }
