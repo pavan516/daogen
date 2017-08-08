@@ -1,5 +1,8 @@
 # DaoGen Changelog
 
+## 0.5.6
+* Chg: Changes to cache handling on insert/update/delete
+
 ## 0.5.5
 + New: Moved project to Github
 * Fix: Added code to handle 'es' ending table names to change ending to just 's'.
