@@ -74,6 +74,14 @@ class Dao
     $s .= '  {'.PHP_EOL;
     $s .= '    parent::__construct($connectionName);'.PHP_EOL;
     $s .= '    $this->setTable(\''.$this->table->getTableName().'\');'.PHP_EOL;
+    $s .= PHP_EOL;
+    $s .= '    /**'.PHP_EOL;
+    $s .= '     * Set Cache TTL for items in Seconds'.PHP_EOL;
+    $s .= '     *'.PHP_EOL;
+    $s .= '     * -1 = Do not cache'.PHP_EOL;
+    $s .= '     *  0 = Never expire'.PHP_EOL;
+    $s .= '     *  n = Cache items for n seconds'.PHP_EOL;
+    $s .= '     */'.PHP_EOL;
     $s .= '    $this->setCacheTTL(60);'.PHP_EOL;
     $s .= '  }'.PHP_EOL;
     $s .=  PHP_EOL;
@@ -204,7 +212,11 @@ class Dao
     $s .=  PHP_EOL;
     $s .= '    $item->setId($id);'.PHP_EOL;
     $s .=  PHP_EOL;
+    $s .= '    # Cache the item'.PHP_EOL;
     $s .= '    $this->cacheSetItem($item);'.PHP_EOL;
+    $s .=  PHP_EOL;
+    $s .= '    # Clear the fetchAll() cache'.PHP_EOL;
+    $s .= '    $this->cacheClearAll();'.PHP_EOL;
     $s .=  PHP_EOL;
     $s .= '    return ($id !=0);'.PHP_EOL;
     $s .= '  }'.PHP_EOL;
@@ -247,6 +259,9 @@ class Dao
     $s .= '      );'.PHP_EOL;
     $s .=  PHP_EOL;
     $s .= '    if ($ok) $this->cacheSetItem($item);'.PHP_EOL;
+    $s .=  PHP_EOL;
+    $s .= '    # Clear the fetchAll() cache'.PHP_EOL;
+    $s .= '    $this->cacheClearAll();'.PHP_EOL;
     $s .=  PHP_EOL;
     $s .= '    return $ok;'.PHP_EOL;
     $s .= '  }'.PHP_EOL;

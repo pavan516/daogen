@@ -30,6 +30,17 @@ interface AbstractBaseDaoInterface
   function setTable(string $table);
   function getCacheTTL(): int;
   function setCacheTTL(int $cacheTTL=-1);
+
+  # Protected Cache methods
+  // protected function cacheSetItem(AbstractBaseEntity $item, $ttl=null )
+  // protected function cacheGetItemByField(string $field, string $value)
+  // protected function cacheGetById(string $id)
+  // protected function cacheGetByCode(string $code)
+  // protected function cacheGetByUuid(string $uuid)
+  // protected function cacheSetAll(array $items, $ttl=null) 
+  // protected function cacheClearAll()
+  // protected function cacheGetAll()
+  // protected function cacheDelete(AbstractBaseEntity $item)
 }
 
 /**
@@ -268,6 +279,9 @@ abstract class AbstractBaseDao extends \Nofuzz\Database\AbstractBaseDao implemen
     if ($ok) {
       $this->cacheDelete($item);
       $item->setId(0);
+
+      # Clear the fetchAll() cache
+      $this->cacheClearAll();
     }
 
     return $ok;
@@ -365,7 +379,7 @@ abstract class AbstractBaseDao extends \Nofuzz\Database\AbstractBaseDao implemen
 #####################################################
 
   /**
-   * Cache array of $item ($items)
+   * Cache array of all $items
    *
    * @param  array      $items        Items array to set in cache
    * @param  mixed      $ttl          Optional. Overrides default TTL. Seconds
@@ -381,6 +395,20 @@ abstract class AbstractBaseDao extends \Nofuzz\Database\AbstractBaseDao implemen
     }
 
     return true;
+  }
+
+  /**
+   * Clear Cache array of all $items
+   *
+   * @return bool
+   */
+  protected function cacheClearAll()
+  {
+    if (cache()) {
+      return cache()->delete(static::class.':all');
+    }
+
+    return false;
   }
 
   /**
