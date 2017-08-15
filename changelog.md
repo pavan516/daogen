@@ -1,5 +1,8 @@
 # DaoGen Changelog
 
+## 0.5.7
+* Fix: Fized singularization of Table names
+
 ## 0.5.6
 * Chg: Changes to cache handling on insert/update/delete
 

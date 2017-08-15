@@ -4,12 +4,13 @@
  *
  * Input
  *   POST body or $ddl variable in source
- *
+ *   
+ * @package    DaoGen
 */
 
 ##############################################################################################################
 
-$daoGenVersion = '0.5.6';
+$daoGenVersion = '0.5.7';
 
 require_once 'class.database.php';
 require_once 'class.entity.php';
