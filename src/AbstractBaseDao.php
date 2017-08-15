@@ -128,6 +128,24 @@ abstract class AbstractBaseDao extends \Nofuzz\Database\AbstractBaseDao implemen
   }
 
   /**
+   * Fetch all records by a $field matching $value
+   *
+   * @param  string $field      Field to match agains
+   * @param  mixed $value       Value to match with
+   * @return array              Array of AbstractBaseEntity objects
+   */
+  public function fetchAllBy(string $field, $value)
+  {
+    $items =
+      $this->fetchCustom(
+        'SELECT * FROM {table} WHERE '.$field.' = :'.strtoupper($field),
+        [':'.strtoupper($field) => $value]
+      ) ?? [];
+
+    return $items;
+  }
+
+  /**
    * Execute $sql with $params
    *
    * @param  string $sql    [description]
