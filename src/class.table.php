@@ -2,16 +2,12 @@
 /**
  * Database Entity & Dao class generator
  *
- * Input
- *   POST body or $ddl variable in source
- *
- * Output:
- *   HTML page with 3 <textarea> tags
- *
+ * @package    DaoGen   
  */
 ##############################################################################################################
 
 require_once 'class.field.php';
+require_once 'class.inflect.php';
 
 /**
  * Represents a Table in a Database
@@ -43,15 +39,8 @@ class Table
     $this->className = str_replace(' ','',ucwords(str_replace('_',' ',$this->tableName)));
 
     # Make Plural words Singular
-    if (substr($this->className,-3,3)=='ies') {
-      $this->className = rtrim($this->className,'ies').'y'; // eg: Properties -> Property
-    } else {
-      if (substr($this->className,-2,2)=='es') {
-        $this->className = rtrim($this->className,'es').'s';  // eg: OrderStatuses -> OrderStatus
-      } else {
-        $this->className = rtrim($this->className,'s');       // eg: Customers -> Customer
-      }
-    }
+    $inflect = new Inflect();
+    $this->className = $inflect->singularize($this->className);
 
     # Extract fields
     $lines = explode("\n", $ddl);
@@ -79,7 +68,7 @@ class Table
   /**
    * Get Table Name
    * 
-   * @return [type] [description]
+   * @return string
    */
   public function getTableName()
   {
@@ -89,7 +78,7 @@ class Table
   /**
    * Get class Name
    * 
-   * @return [type] [description]
+   * @return string
    */
   public function getClassName()
   {
@@ -99,7 +88,7 @@ class Table
   /**
    * Get all fields
    * 
-   * @return [type] [description]
+   * @return array
    */
   public function getFields()
   {
@@ -110,7 +99,7 @@ class Table
    * Check if table has a field by the name
    * 
    * @param  string  $fieldName [description]
-   * @return boolean            [description]
+   * @return boolean
    */
   public function hasField(string $fieldName)
   {
