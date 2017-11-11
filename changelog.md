@@ -1,5 +1,9 @@
 # DaoGen Changelog
 
+## 0.5.8
+* Adopted for Spin Framework
+* Uses `/App/Models` as root for Entities and DAO objects
+
 ## 0.5.7
 * Fix: Fized singularization of Table names
 
@@ -10,22 +14,22 @@
 + New: Moved project to Github
 * Fix: Added code to handle 'es' ending table names to change ending to just 's'.
 
-## 0.5.4  
+## 0.5.4
 * Fix: Default values set to properties by Entity-Object now doefaults to NULL unless a defailt value was set in the SQL Create Table statement
 * Fix: Controller generated entityObjects without the 'Entity' keyword at the end of classname
-       
+
 ## 0.5.3
 * Fix in Controllers generated $args[] retreival in GET and DELETE has an added "?? null;" to make args passing not fail with warnings
-+ Added automatic Test Case generation for Entities 
++ Added automatic Test Case generation for Entities
 * Controller classes no longer refer to any specific connection (was 'main')
 * AbstractBaseDao::execCustomGetLastId() LastInsertId() only supported on MySql. Now Firebird,PostgreSql,Oracle,CockroachDb work with 'RETURNING id'; instead
 * Dao classes now "return true;" instead of "return null;" when generated code returns error in handle*() methods
-+ Renamed Entity objects to have Suffix "Entity" to be clearer what they are 
-+ Makes Plural table names Singular. Support for "Properties" type of wors as well 
++ Renamed Entity objects to have Suffix "Entity" to be clearer what they are
++ Makes Plural table names Singular. Support for "Properties" type of wors as well
 * BLOB fields and default PHP value of "". Now default value is ''
-* ClassName was taken from TableName, and was lowercased. Now ucwords() it correctly 
+* ClassName was taken from TableName, and was lowercased. Now ucwords() it correctly
 + Added if () {} with error logging if insert() or update() failes in Controller generation
-         
+
 ## 0.5.2
 * BugFix in handleGET() in controller generation
 * Bugfix in Entity generator for DateTime and TimeZone handling

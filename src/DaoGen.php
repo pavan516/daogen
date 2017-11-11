@@ -4,13 +4,13 @@
  *
  * Input
  *   POST body or $ddl variable in source
- *   
+ *
  * @package    DaoGen
 */
 
 ##############################################################################################################
 
-$daoGenVersion = '0.5.7';
+$daoGenVersion = '0.5.8';
 
 require_once 'class.database.php';
 require_once 'class.entity.php';
@@ -22,7 +22,7 @@ require_once 'class.test.php';
 
 /**
  * str_pad for multi-byte strings
- * 
+ *
  * @param  [type] $str      [description]
  * @param  [type] $pad_len  [description]
  * @param  string $pad_str  [description]
@@ -72,6 +72,8 @@ function mb_str_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT, $encod
       echo  '<title>Entity & Dao class generator</title>';
       echo '</head>';
       echo '<body>';
+      echo '<h1>DaoGen for Spin-Framework</h1>';
+
       echo '<h3>Database or Table DDL (MySql & Firebird accepted)<h3>';
       echo '<form method="post" action="DaoGen.php">';
       echo 'Namespace <input type="text" name="namespace" value="'.$namespace.'"></br>';
@@ -89,7 +91,7 @@ function mb_str_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT, $encod
   # Create the files
   #
 
-  # 
+  #
   $database = new \Database( 'Unknown', $ddl, ['namespace'=>$namespace] );
 
   echo 'DaoGen v'.$daoGenVersion.PHP_EOL;
@@ -97,15 +99,17 @@ function mb_str_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT, $encod
   echo 'Generating files from '.$database->getName().'. '.count($database->getTables()).' tables'.PHP_EOL;
 
   $t1 = microtime(true);
-  
+
   header('Content-Type: text/plain');
 
   # Make dirs
   if (!file_exists('output')) mkdir('output');
   if (!file_exists('output/App')) mkdir('output/App');
-  if (!file_exists('output/App/Db')) mkdir('output/App/Db');
-  if (!file_exists('output/Controllers')) mkdir('output/Controllers');
-  if (!file_exists('output/Tests')) mkdir('output/Tests');
+  if (!file_exists('output/App/Models')) mkdir('output/App/Models');
+  if (!file_exists('output/App/Models/Db')) mkdir('output/App/Models/Db');
+  if (!file_exists('output/App/Controllers')) mkdir('output/App/Controllers');
+  if (!file_exists('output/App/Controllers/v1')) mkdir('output/App/Controllers/v1');
+  if (!file_exists('output/App/Tests')) mkdir('output/App/Tests');
 
   if (count($database->getTables())>0) {
     # For each table ...
@@ -114,37 +118,37 @@ function mb_str_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT, $encod
       echo 'Table '.$table->getTableName().PHP_EOL;
 
       # Generate Entity files
-      $entity = new \Entity($table, ['namespace'=>$namespace]);
+      $entity = new \Entity($table);
       $filename = $table->getClassName().'Entity.php';
       echo ' > Entity:     '.$filename.PHP_EOL;
       $source = $entity->getPhpSource();
-      file_put_contents('Output/App/Db/'.$filename, $source );
+      file_put_contents('Output/App/Models/'.$filename, $source );
 
       # Generate DAO files
-      $dao = new \Dao($table, ['namespace'=>$namespace]);
+      $dao = new \Dao($table);
       $filenameDao = $table->getClassName().'Dao.php';
       echo ' > Dao:        '.$filenameDao.PHP_EOL;
       $source = $dao->getPhpSource();
-      file_put_contents('Output/App/Db/'.$filenameDao, $source );
+      file_put_contents('Output/App/Models/Db/'.$filenameDao, $source );
 
       # Generate Conrollers
       $controller = new \Controller($table);
       $filenameController = $table->getClassName().'Controller.php';
       echo ' > Controller: '.$filenameController.PHP_EOL;
       $source = $controller->getPhpSource();
-      file_put_contents('Output/Controllers/'.$filenameController, $source );
+      file_put_contents('Output/App/Controllers/v1/'.$filenameController, $source );
 
       # Generate tests
       $test = new \Test($table);
       $filenameTest = $table->getClassName().'EntityTest.php';
       echo ' > Test:       '.$filenameTest.PHP_EOL;
       $source = $test->getPhpSource();
-      file_put_contents('Output/Tests/'.$filenameTest, $source );
+      file_put_contents('Output/App/Tests/'.$filenameTest, $source );
     }
 
     # Copy AbstractBase* files to output
-    copy ('AbstractBaseDao.php','Output/App/Db/AbstractBaseDao.php');
-    copy ('AbstractBaseEntity.php','Output/App/Db/AbstractBaseEntity.php');
+    copy ('AbstractBaseDao.php',    'Output/App/Models/Db/AbstractBaseDao.php');
+    copy ('AbstractBaseEntity.php', 'Output/App/Models/AbstractBaseEntity.php');
   }
 
   $t2 = microtime(true);

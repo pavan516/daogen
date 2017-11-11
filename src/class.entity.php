@@ -15,7 +15,7 @@ class Entity
   {
     $this->table = $table;
     $this->options = $options;
-    $this->namespace = $options['namespace'] ?? '\\App\\Db';
+    $this->namespace = $options['namespace'] ?? '\\App\\Models';
   }
 
 
@@ -39,7 +39,7 @@ class Entity
     $s .= ' *'.PHP_EOL;
     $s .= ' *  Generated with DaoGen v'.$daoGenVersion.PHP_EOL;
     $s .= ' *'.PHP_EOL;
-    $s .= ' * @since    '.(new \DateTime('now',new \DateTimeZone('UTC')))->format('Y-m-d H:i:s').PHP_EOL;
+    $s .= ' * @since    '.(new \DateTime('now',new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z').PHP_EOL;
     $s .= ' * @package  Nofuzz Appliction'.PHP_EOL;
     $s .= ' */'.PHP_EOL;
     $s .= '#########################################################################################'.PHP_EOL;
@@ -61,10 +61,13 @@ class Entity
     $s .= 'namespace '.ltrim($this->namespace,'\\').';'.PHP_EOL;
     $s .= PHP_EOL;
 
+    $s .= 'use \\'.ltrim($this->namespace,'\\').'\\AbstractBaseEntity;'.PHP_EOL;
+    $s .= PHP_EOL;
+
     $s .= '/** '.PHP_EOL;
     $s .= ' * Class representing rows in table "'.$this->table->getTableName().'"'.PHP_EOL;
     $s .= ' */'.PHP_EOL;
-    $s .= 'class '.$this->table->getClassName().'Entity extends '.$this->namespace.'\\AbstractBaseEntity'.PHP_EOL;
+    $s .= 'class '.$this->table->getClassName().'Entity extends AbstractBaseEntity'.PHP_EOL;
     $s .= '{'.PHP_EOL;
 
     # Fields
@@ -160,7 +163,7 @@ class Entity
         $s .= '    if (!is_null($'.$field->getName().')) {'.PHP_EOL;
         $s .= '      $d = new \DateTime($'.$field->getName().');'.PHP_EOL;
         $s .= '      $d->setTimeZone(new \DateTimeZone("UTC"));'.PHP_EOL;
-        $s .= '      $this->'.$field->getName().' = $d->format("Y-m-d H:i:s");'.PHP_EOL;
+        $s .= '      $this->'.$field->getName().' = $d->format("Y-m-d\TH:i:s\Z");'.PHP_EOL;
         $s .= '    }'.PHP_EOL;
       } else {
         $s .= '    $this->'.$field->getName().' = $'.$field->getName().';'.PHP_EOL;

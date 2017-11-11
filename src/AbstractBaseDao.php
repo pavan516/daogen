@@ -1,14 +1,11 @@
-<?php
-/**
- * AbstractBaseDao
- *
- * @package     [app]
-*/
-################################################################################################################################
+<?php declare(strict_types=1);
 
-use \App\Db\AbstractBaseEntity as AbstractBaseEntity;
+namespace App\Models\Db;
 
-namespace App\Db;
+use \Spin\Database\PdoConnection;
+use \Spin\Database\PdoConnectionInterface;
+
+use \App\Models\AbstractBaseEntity;
 
 /**
  * AbstraceBaseDao Interface
@@ -26,6 +23,8 @@ interface AbstractBaseDaoInterface
   function update(AbstractBaseEntity $item): bool;
   function delete(AbstractBaseEntity &$item): bool;
 
+  function getConnection(strin $connectionName): string;
+
   function getTable(): string;
   function setTable(string $table);
   function getCacheTTL(): int;
@@ -37,7 +36,7 @@ interface AbstractBaseDaoInterface
   // protected function cacheGetById(string $id)
   // protected function cacheGetByCode(string $code)
   // protected function cacheGetByUuid(string $uuid)
-  // protected function cacheSetAll(array $items, $ttl=null) 
+  // protected function cacheSetAll(array $items, $ttl=null)
   // protected function cacheClearAll()
   // protected function cacheGetAll()
   // protected function cacheDelete(AbstractBaseEntity $item)
@@ -46,8 +45,11 @@ interface AbstractBaseDaoInterface
 /**
  * AbstraceBaseDao Class
  */
-abstract class AbstractBaseDao extends \Nofuzz\Database\AbstractBaseDao implements AbstractBaseDaoInterface
+abstract class AbstractBaseDao implements AbstractBaseDaoInterface
 {
+  protected $connectionName;
+  protected $connection;
+
   protected $table;
   protected $cacheTTL;
 
@@ -58,7 +60,9 @@ abstract class AbstractBaseDao extends \Nofuzz\Database\AbstractBaseDao implemen
    */
   public function __construct(string $connectionName='')
   {
-    parent::__construct($connectionName);
+    $this->connectionName = $connectionName;
+
+    $this->setConnection(null);
     $this->setTable('');
     $this->setCacheTTL(-1);
   }
@@ -278,8 +282,6 @@ abstract class AbstractBaseDao extends \Nofuzz\Database\AbstractBaseDao implemen
     return $rows;
   }
 
-
-
   /**
    * Delete
    *
@@ -394,8 +396,6 @@ abstract class AbstractBaseDao extends \Nofuzz\Database\AbstractBaseDao implemen
     return false;
   }
 
-#####################################################
-
   /**
    * Cache array of all $items
    *
@@ -464,7 +464,97 @@ abstract class AbstractBaseDao extends \Nofuzz\Database\AbstractBaseDao implemen
     return true;
   }
 
+  // Commented out for now - we may take these into use if we deem it more convenient to
+  // operate on the DAO object instead of the DB connection!
+  //
+  // /**
+  //  * Wrapper function for PdoConnection.beginTransaction
+  //  *
+  //  * @return bool
+  //  */
+  // public function beginTransaction()
+  // {
+  //   if (!$this->getConnection()->inTransaction()) {
+  //     return $this->getConnection()->beginTransaction();
+  //   }
+  //   return false;
+  // }
 
+  // /**
+  //  * Wrapper function for PdoConnection.commit
+  //  *
+  //  * @return bool
+  //  */
+  // public function commit()
+  // {
+  //   if ($this->getConnection()->inTransaction()) {
+  //     return $this->getConnection()->commit();
+  //   }
+  //   return false;
+  // }
+
+  // /**
+  //  * Wrapper function for PdoConnection.rollback
+  //  *
+  //  * @return bool
+  //  */
+  // public function rollback()
+  // {
+  //   if ($this->getConnection()->inTransaction()) {
+  //     return $this->getConnection()->rollback();
+  //   }
+  //   return false;
+  // }
+
+  // /**
+  //  * Execute a SELECT statement
+  //  *
+  //  * @param  string $sql          SQL statement to execute (SELECT ...)
+  //  * @param  array  $params       Bind params
+  //  * @return array                Array with fetched rows
+  //  */
+  // public function rawQuery(string $sql, array $params=[])
+  // {
+  //   return $this->getConnection()->rawQuery($sql, $params);
+  // }
+
+  // /**
+  //  * Execute an INSERT, UPDATE or DELETE statement
+  //  *
+  //  * @param  string $sql          SQL statement to execute (INSERT, UPDATE, DELETE ...)
+  //  * @param  array  $params       Bind params
+  //  * @return bool                 True if rows affected > 0
+  //  */
+  // public function rawExec(string $sql, array $params=[])
+  // {
+  //   return $this->getConnection()->rawExec($sql, $params);
+  // }
+
+  /**
+   * Get the DB connection assinged to this DAO object
+   *
+   * @return null | PdoConnectionInterface
+   */
+  public function getConnection()
+  {
+    # Obtain the connection from helper function db()
+    $this->setConnection( db($this->connectionName) );
+
+    return $this->connection;
+  }
+
+  /**
+   * Set the DB connection
+   *
+   * @param   PdoConnectionInterface $connection
+   * @return  self
+   */
+  public function setConnection(?PdoConnectionInterface $connection)
+  {
+    $this->connection = $connection;
+
+    return $this;
+  }
 
   /**
    * Get Table

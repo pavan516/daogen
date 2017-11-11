@@ -176,7 +176,7 @@ class Field
   {
     $s = 'null';
 
-    if (strcasecmp($language,'json')==0) {   
+    if (strcasecmp($language,'json')==0) {
       switch ( substr(strtoupper($this->getType()),0,8) ) {
         case 'NVARCHAR':
         case 'VARCHAR':
@@ -203,7 +203,7 @@ class Field
           break;
         case 'TIMESTAM':
         case 'DATETIME':
-          $s = '"1970-01-01 00:00:00"';
+          $s = '"1970-01-01T00:00:00Z"';
           break;
         default:
           $s = '""';
@@ -213,44 +213,16 @@ class Field
     if (strcasecmp($language,'php')==0) {
 
       if ( strlen($this->default) == 0 ) {
+
         return 'null';
+      } else
+      if ( strcasecmp($this->default,'CURRENT_TIMESTAMP') == 0 ) {
+
+        return ' (new \DateTime(\'@\'.time() ))->format(\'Y-m-d\TH:i:s\Z\') ';
       } else {
+
         return $this->default;
       }
-
-      # OLD Deprocate stuff
-      // switch ( substr(strtoupper($this->getType()),0,8) ) {
-      //   case 'NVARCHAR':
-      //   case 'VARCHAR':
-      //   case 'TEXT':
-      //   case 'MEDIUMTE':
-      //   case 'LONGTEXT':
-      //   case 'BLOB':
-      //     $s = "''";
-      //     break;
-      //   case 'BIGINT':
-      //   case 'SMALLINT':
-      //   case 'INT':
-      //   case 'INTEGER':
-      //   case 'NUMERIC':
-      //   case 'DECIMAL':
-      //   case 'FLOAT':
-      //     $s = "0";
-      //     break;
-      //   case 'DATE':
-      //     $s = '(new \DateTime("now",new \DateTimeZone("UTC")))->format("Y-m-d")';
-      //     break;
-      //   case 'TIME':
-      //     $s = '(new \DateTime("now",new \DateTimeZone("UTC")))->format("H:i:s")';
-      //     break;
-      //   case 'TIMESTAM':
-      //   case 'DATETIME':
-      //     $s = '(new \DateTime("now",new \DateTimeZone("UTC")))->format("Y-m-d H:i:s")';
-      //     break;
-      //   default:
-      //     $s = "''";
-      //     break;
-      // }
     }
 
     return $s;

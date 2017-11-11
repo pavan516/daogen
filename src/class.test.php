@@ -14,7 +14,7 @@ class Test
   {
     $this->table = $table;
     $this->options = $options;
-    $this->namespace = $options['namespace'] ?? '\\App\\Db';
+    $this->namespace = $options['namespace'] ?? '\\App\\Tests';
   }
 
 
@@ -70,7 +70,7 @@ class Test
     $s .= '   * Test method for Entity'.PHP_EOL;
     $s .= '   */'.PHP_EOL;
     $s .= '  public function test'.$this->table->getClassName().'()'.PHP_EOL;
-    $s .= '  {'.PHP_EOL;  
+    $s .= '  {'.PHP_EOL;
     $s .= '    $entity = new '.$this->namespace.'\\'.$this->table->getClassName().'Entity();'.PHP_EOL;
     $s .= '    $entity = $entity->fromArray($entity->asArray());'.PHP_EOL;
     $s .= PHP_EOL;
@@ -80,7 +80,7 @@ class Test
 
     $s .= '} // EOC'.PHP_EOL;
 
-    return $s;    
+    return $s;
   }
 
 } // EOC
