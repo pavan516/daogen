@@ -85,7 +85,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
     try {
       $autoCommit = $this->beginTransaction();
       # Prepare
-      if ($sth=$this->db()->prepare($sql)) {
+      if ($sth=$this->getConnection()->prepare($sql)) {
         # Binds
         foreach ($params as $bind=>$value) {
           $sth->bindValue(':'.ltrim($bind,':'), $value);
@@ -166,7 +166,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
     $result = false;
     try {
       $autoCommit = $this->beginTransaction();
-      if ($sth = $this->db()->prepare($sql))
+      if ($sth = $this->getConnection()->prepare($sql))
       {
         # Binds
         foreach ($params as $bind=>$value) {
@@ -191,7 +191,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
    *
    * @param  string $sql    [description]
    * @param  array  $params [description]
-   * @return int            $this->db()->lastInsertId()
+   * @return int            $this->getConnection()->lastInsertId()
    */
   public function execCustomGetLastId(string $sql, array $params=[]): int
   {
@@ -203,14 +203,14 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
     try {
       $autoCommit = $this->beginTransaction();
 
-      if ( strcasecmp($this->db()->getDriver(),'mysql')!=0 ) {
+      if ( strcasecmp($this->getConnection()->getDriver(),'mysql')!=0 ) {
         # Firebird, PostGreSQL and Oracle support RETURNING clauses
         $sql .= ' RETURNING id';
       } else {
         # MySql driver, not supporting RETURNING statements
       }
 
-      if ($sth = $this->db()->prepare($sql))
+      if ($sth = $this->getConnection()->prepare($sql))
       {
         # Binds
         foreach ($params as $bind=>$value) {
@@ -218,13 +218,13 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
         }
         # Execute
         if ($sth->execute()) {
-          if ( strcasecmp($this->db()->getDriver(),'mysql')!=0 ) {
+          if ( strcasecmp($this->getConnection()->getDriver(),'mysql')!=0 ) {
             # Firebird, PostGreSQL, Oracle, CockroachDb support RETURNING clauses
             $row = $sth->fetch(\PDO::FETCH_ASSOC);
             $result = array_change_key_case($row,CASE_LOWER)['id'] ?? 0;
           } else {
             # MySql driver, not supporting RETURNING statements, instead uses LastInsertId()
-            $result = $this->db()->lastInsertId();
+            $result = $this->getConnection()->lastInsertId();
           }
         }
       }
@@ -263,7 +263,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
     try {
       $autoCommit = $this->beginTransaction();
       # Prepare
-      if ($sth=$this->db()->prepare($sql)) {
+      if ($sth=$this->getConnection()->prepare($sql)) {
         # Binds
         foreach ($params as $bind=>$value) {
           $sth->bindValue(strtoupper(':'.$bind), $value);
@@ -465,71 +465,68 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
     return true;
   }
 
-  // Commented out for now - we may take these into use if we deem it more convenient to
-  // operate on the DAO object instead of the DB connection!
-  //
-  // /**
-  //  * Wrapper function for PdoConnection.beginTransaction
-  //  *
-  //  * @return bool
-  //  */
-  // public function beginTransaction()
-  // {
-  //   if (!$this->getConnection()->inTransaction()) {
-  //     return $this->getConnection()->beginTransaction();
-  //   }
-  //   return false;
-  // }
+  /**
+   * Wrapper function for PdoConnection.beginTransaction
+   *
+   * @return bool
+   */
+  public function beginTransaction()
+  {
+    if (!$this->getConnection()->inTransaction()) {
+      return $this->getConnection()->beginTransaction();
+    }
+    return false;
+  }
 
-  // /**
-  //  * Wrapper function for PdoConnection.commit
-  //  *
-  //  * @return bool
-  //  */
-  // public function commit()
-  // {
-  //   if ($this->getConnection()->inTransaction()) {
-  //     return $this->getConnection()->commit();
-  //   }
-  //   return false;
-  // }
+  /**
+   * Wrapper function for PdoConnection.commit
+   *
+   * @return bool
+   */
+  public function commit()
+  {
+    if ($this->getConnection()->inTransaction()) {
+      return $this->getConnection()->commit();
+    }
+    return false;
+  }
 
-  // /**
-  //  * Wrapper function for PdoConnection.rollback
-  //  *
-  //  * @return bool
-  //  */
-  // public function rollback()
-  // {
-  //   if ($this->getConnection()->inTransaction()) {
-  //     return $this->getConnection()->rollback();
-  //   }
-  //   return false;
-  // }
+  /**
+   * Wrapper function for PdoConnection.rollback
+   *
+   * @return bool
+   */
+  public function rollback()
+  {
+    if ($this->getConnection()->inTransaction()) {
+      return $this->getConnection()->rollback();
+    }
+    return false;
+  }
 
-  // /**
-  //  * Execute a SELECT statement
-  //  *
-  //  * @param  string $sql          SQL statement to execute (SELECT ...)
-  //  * @param  array  $params       Bind params
-  //  * @return array                Array with fetched rows
-  //  */
-  // public function rawQuery(string $sql, array $params=[])
-  // {
-  //   return $this->getConnection()->rawQuery($sql, $params);
-  // }
+  /**
+   * Execute a SELECT statement
+   *
+   * @param  string $sql          SQL statement to execute (SELECT ...)
+   * @param  array  $params       Bind params
+   * @return array                Array with fetched rows
+   */
+  public function rawQuery(string $sql, array $params=[])
+  {
+    return $this->getConnection()->rawQuery($sql, $params);
+  }
 
-  // /**
-  //  * Execute an INSERT, UPDATE or DELETE statement
-  //  *
-  //  * @param  string $sql          SQL statement to execute (INSERT, UPDATE, DELETE ...)
-  //  * @param  array  $params       Bind params
-  //  * @return bool                 True if rows affected > 0
-  //  */
-  // public function rawExec(string $sql, array $params=[])
-  // {
-  //   return $this->getConnection()->rawExec($sql, $params);
-  // }
+  /**
+   * Execute an INSERT, UPDATE or DELETE statement
+   *
+   * @param  string $sql          SQL statement to execute (INSERT, UPDATE, DELETE ...)
+   * @param  array  $params       Bind params
+   * @return bool                 True if rows affected > 0
+   */
+  public function rawExec(string $sql, array $params=[])
+  {
+    return $this->getConnection()->rawExec($sql, $params);
+  }
 
   /**
    * Get the DB connection assinged to this DAO object
@@ -540,7 +537,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   public function getConnection(string $connectionName='')
   {
     # Obtain the connection from helper function db()
-    return db( (empty($connectionName) ? $this->connection_name : $connectionName) );
+    return db( (empty($connectionName) ? $this->connectionName : $connectionName) );
   }
 
   /**
