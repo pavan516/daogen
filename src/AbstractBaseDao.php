@@ -23,7 +23,8 @@ interface AbstractBaseDaoInterface
   function update(AbstractBaseEntity $item): bool;
   function delete(AbstractBaseEntity &$item): bool;
 
-  function getConnection(strin $connectionName): string;
+  function getConnection(string $connectionName='');
+  function setConnection(?PdoConnectionInterface $connection);
 
   function getTable(): string;
   function setTable(string $table);
@@ -437,7 +438,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   protected function cacheGetAll()
   {
     $cacheKey = static::class.':all';
-    if (cache() && cache()->has($cacheKey)) {
+    if (cache() && $cacheKey && cache()->has($cacheKey)) {
       return cache()->get($cacheKey);
     }
 
@@ -533,14 +534,13 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Get the DB connection assinged to this DAO object
    *
+   * @param  string $connectionName
    * @return null | PdoConnectionInterface
    */
-  public function getConnection()
+  public function getConnection(string $connectionName='')
   {
     # Obtain the connection from helper function db()
-    $this->setConnection( db($this->connectionName) );
-
-    return $this->connection;
+    return db( (empty($connectionName) ? $this->connection_name : $connectionName) );
   }
 
   /**

@@ -23,7 +23,7 @@ class Dao
   {
     $this->table = $table;
     $this->options = $options;
-    $this->namespace = $options['namespace'] ?? '\\App\\Db';
+    $this->namespace = $options['namespace'] ?? '\\App\\Models';
   }
 
   /**
@@ -52,16 +52,17 @@ class Dao
     $s .= '#########################################################################################'.PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= 'Use '.ltrim($this->namespace,'\\').'\\AbstractBaseEntity as AbstractBaseEntity;'.PHP_EOL;
+    $s .= 'namespace '.ltrim($this->namespace,'\\').'\\Db;'.PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= 'namespace '.ltrim($this->namespace,'\\').';'.PHP_EOL;
+    $s .= 'use \\'.ltrim($this->namespace,'\\').'\\AbstractBaseEntity;'.PHP_EOL;
+    $s .= 'use \\'.ltrim($this->namespace,'\\').'\\Db\\AbstractBaseDao;'.PHP_EOL;
     $s .= PHP_EOL;
 
     $s .= '/** '.PHP_EOL;
     $s .= ' * Dao class for rows in table "'.$this->table->getTableName().'"'.PHP_EOL;
     $s .= ' */'.PHP_EOL;
-    $s .= 'class '.$this->table->getClassName().'Dao extends '.$this->namespace.'\\AbstractBaseDao'.PHP_EOL;
+    $s .= 'class '.$this->table->getClassName().'Dao extends AbstractBaseDao'.PHP_EOL;
     $s .= '{'.PHP_EOL;
 
     ## Constructor
@@ -95,7 +96,7 @@ class Dao
     $s .= '   */'.PHP_EOL;
     $s .= '  function makeEntity(array $fields=[]): AbstractBaseEntity'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
-    $s .= '    $item = new '.$this->namespace.'\\'.$this->table->getclassName().'Entity(array_change_key_case($fields),CASE_LOWER);'.PHP_EOL;
+    $s .= '    $item = new '.$this->table->getclassName().'Entity(array_change_key_case($fields),CASE_LOWER);'.PHP_EOL;
     $s .= '    $this->cacheSetItem($item);'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    return $item;'.PHP_EOL;
