@@ -135,13 +135,13 @@ class Entity
       # Getter
       $s .= '  public function get'.$field->getUcwName().'()'.PHP_EOL;
       $s .= '  {'.PHP_EOL;
-      if ($field->isInt()) {
-        $s .= '    if (!is_null($this->'.$field->getName().')) return (int) $this->'.$field->getName().';'.PHP_EOL;
-      }
-      if ($field->isNumeric()) {
-        $s .= '    if (!is_null($this->'.$field->getName().')) return (float) $this->'.$field->getName().';'.PHP_EOL;
-      }
-      $s .= PHP_EOL;
+      // if ($field->isInt()) {
+      //   $s .= '    if (!is_null($this->'.$field->getName().')) return (int) $this->'.$field->getName().';'.PHP_EOL;
+      // }
+      // if ($field->isNumeric()) {
+      //   $s .= '    if (!is_null($this->'.$field->getName().')) return (float) $this->'.$field->getName().';'.PHP_EOL;
+      // }
+      // $s .= PHP_EOL;
       $s .= '    return $this->'.$field->getName().';'.PHP_EOL;
       $s .= '  }'.PHP_EOL;
       $s .= PHP_EOL;
