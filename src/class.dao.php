@@ -57,6 +57,7 @@ class Dao
 
     $s .= 'use \\'.ltrim($this->namespace,'\\').'\\AbstractBaseEntity;'.PHP_EOL;
     $s .= 'use \\'.ltrim($this->namespace,'\\').'\\Db\\AbstractBaseDao;'.PHP_EOL;
+    $s .= 'use \\'.ltrim($this->namespace,'\\').'\\'.$this->table->getClassName().'Entity;'.PHP_EOL;
     $s .= PHP_EOL;
 
     $s .= '/** '.PHP_EOL;
@@ -70,8 +71,9 @@ class Dao
     $s .= '   * Constructor'.PHP_EOL;
     $s .= '   *'.PHP_EOL;
     $s .= '   * @param string  $connectionname    Database ConnectionName'.PHP_EOL;
+    $s .= '   * @param int     $cacheTTL          Seconds to Cache the entries. -1=off'.PHP_EOL;
     $s .= '   */'.PHP_EOL;
-    $s .= '  public function __construct(string $connectionName=\'\')'.PHP_EOL;
+    $s .= '  public function __construct(string $connectionName=\'\', int $cacheTTL=-1)'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
     $s .= '    parent::__construct($connectionName);'.PHP_EOL;
     $s .= '    $this->setTable(\''.$this->table->getTableName().'\');'.PHP_EOL;
@@ -83,7 +85,7 @@ class Dao
     $s .= '     *  0 = Never expire'.PHP_EOL;
     $s .= '     *  n = Cache items for n seconds'.PHP_EOL;
     $s .= '     */'.PHP_EOL;
-    $s .= '    $this->setCacheTTL(60);'.PHP_EOL;
+    $s .= '    $this->setCacheTTL($cacheTTL);'.PHP_EOL;
     $s .= '  }'.PHP_EOL;
     $s .=  PHP_EOL;
 

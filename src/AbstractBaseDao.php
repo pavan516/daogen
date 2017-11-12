@@ -58,14 +58,15 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
    * Constructor
    *
    * @param string  $connectionname    Database ConnectionName
+   * @param int     $cacheTTL          Seconds to Cache the entries. -1=off
    */
-  public function __construct(string $connectionName='')
+  public function __construct(string $connectionName='', int $cacheTTL=-1)
   {
     $this->connectionName = $connectionName;
 
     $this->setConnection(null);
     $this->setTable('');
-    $this->setCacheTTL(-1);
+    $this->setCacheTTL($cacheTTL);
   }
 
   /**
