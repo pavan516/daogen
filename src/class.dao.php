@@ -157,7 +157,7 @@ class Dao
     }
 
     $s .= '    if (!empty($where))'.PHP_EOL;
-    $s .= '      $where = \'WHERE \'.ltrim($where,\'AND \');'.PHP_EOL;
+    $s .= '      $where = \'WHERE \'.preg_replace(\'/^AND /\', \'\', $where);'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    if (!empty($keywords[\'order\'])) // Note here that we use the $keyword[\'order\'] directly in SQL string.'.PHP_EOL;
     $s .= '      $order = \' ORDER BY \'.$keywords[\'order\'];'.PHP_EOL;
@@ -201,9 +201,13 @@ class Dao
     $s .= '        \'VALUES \'.'.PHP_EOL;
     $ss = '';
     foreach ($this->table->getFields() as $field) {
-      $ss .= ':'.$field->getName().',';
+      if ($field->isDateTime()) {
+        $ss .= "STR_TO_DATE(:".strtoupper($field->getName()).",\\'%Y-%m-%dT%H:%i:%sZ\\'),";
+      } else {
+        $ss .= ':'.strtoupper($field->getName()).',';
+      }
     }
-    $s .= '        \'('.strtoupper(rtrim($ss,',')).')\', '.PHP_EOL;
+    $s .= '        \'('.rtrim($ss,',').')\', '.PHP_EOL;
     $s .= '        ['.PHP_EOL;
     $ss = '';
     foreach ($this->table->getFields() as $field) {
@@ -240,15 +244,25 @@ class Dao
     $ss = '';
     foreach ($this->table->getFields() as $field) {
       if (strcasecmp($field->getName(),'id')==0) continue;
-      $ss .= '        \' '.$field->getName().' = :'.strtoupper($field->getName()).', \'. '.PHP_EOL;
+      $ss .= '        \' '.$field->getName().' = '; // :'.strtoupper($field->getName()).', \'. '.PHP_EOL;
+      # Datetime fields special handling
+      if ($field->isDateTime()) {
+        $ss .= "STR_TO_DATE(:".strtoupper($field->getName()).",\\'%Y-%m-%dT%H:%i:%sZ\\'), '.".PHP_EOL;
+      } else {
+        $ss .= ':'.strtoupper($field->getName()).', \'.'.PHP_EOL;
+      }
     }
     $s .=  rtrim($ss,", '. ".PHP_EOL).' \'. '.PHP_EOL;
     $s .= '        \'WHERE \'.'.PHP_EOL;
     $s .= '        \' id = :ID \','.PHP_EOL;
-    $ss = '';
-    foreach ($this->table->getFields() as $field) {
-      $ss .= ':'.$field->getName().',';
-    }
+    // $ss = '';
+    // foreach ($this->table->getFields() as $field) {
+    //   if ($field->isDateTime()) {
+    //     $ss .= "STR_TO_DATE(:".$field->getName().",\\'%Y-%m-%dT%H:%i:%sZ\\'),";
+    //   } else {
+    //     $ss .= ':'.$field->getName().',';
+    //   }
+    // }
     $s .= '        ['.PHP_EOL;
     $s .= '';
     $ss = '';

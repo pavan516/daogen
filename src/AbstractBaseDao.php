@@ -237,7 +237,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
 
     }
 
-    return $result;
+    return (int) $result;
   }
 
   /**
