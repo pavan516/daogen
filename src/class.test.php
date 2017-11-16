@@ -39,7 +39,6 @@ class Test
     $s .= " *  Generated with DaoGen v".$daoGenVersion.PHP_EOL;
     $s .= " *".PHP_EOL;
     $s .= " * @since    ".(new \DateTime('now',new \DateTimeZone("UTC")))->format("Y-m-d H:i:s").PHP_EOL;
-    $s .= " * @package  Nofuzz Appliction".PHP_EOL;
     $s .= " */".PHP_EOL;
     $s .= "#########################################################################################".PHP_EOL;
     $s .= PHP_EOL;
