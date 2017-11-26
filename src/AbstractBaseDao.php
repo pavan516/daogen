@@ -58,7 +58,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
    * Constructor
    *
    * @param string  $connectionname    Database ConnectionName
-   * @param int     $cacheTTL          Seconds to Cache the entries. -1=off
+   * @param int     $cacheTTL          Seconds to Cache the entries. 0=Forever, -1=Do not cache
    */
   public function __construct(string $connectionName='', int $cacheTTL=-1)
   {
