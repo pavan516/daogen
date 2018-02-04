@@ -128,7 +128,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
         [':'.strtoupper($field) => $value]
       )[0] ?? null;
 
-    if ($item) $this->cacheSetItem($item,$field);
+    if ($item) $this->cacheSetItem($item);
 
     return $item;
   }
