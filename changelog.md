@@ -1,5 +1,13 @@
 # DaoGen Changelog
 
+## 0.5.9
+* Added Package name as input. Empty package name defaults to `[Package]`
+* Controller generation enhanced, made Spin compatible, better field checking
+* Namespace handling changed. Assumes `\\App\\Models\\<Namespace>` for Entity files
+* Namespace handling changed. Assumes `\\App\\Models\\Db\\<Namespace>` for Dao files
+* Namespace handling changed. Assumes `\\App\\Controllers\\v1\\<Namespace>` for Controller files
+* Namespace handling changed. Assumes `\\App\\Tests\\<Namespace>` for Test files
+
 ## 0.5.8
 * Adopted for Spin Framework
 * Uses `/App/Models` as root for Entities and DAO objects

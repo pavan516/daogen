@@ -10,7 +10,7 @@
 
 ##############################################################################################################
 
-$daoGenVersion = '0.5.8';
+$daoGenVersion = '0.5.9';
 
 require_once 'class.database.php';
 require_once 'class.entity.php';
@@ -23,12 +23,13 @@ require_once 'class.test.php';
 /**
  * str_pad for multi-byte strings
  *
- * @param  [type] $str      [description]
- * @param  [type] $pad_len  [description]
- * @param  string $pad_str  [description]
- * @param  [type] $dir      [description]
- * @param  [type] $encoding [description]
- * @return string
+ * @param      [type]  $str       [description]
+ * @param      [type]  $pad_len   [description]
+ * @param      string  $pad_str   [description]
+ * @param      [type]  $dir       [description]
+ * @param      [type]  $encoding  [description]
+ *
+ * @return     string
  */
 function mb_str_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT, $encoding = NULL)
 {
@@ -46,6 +47,37 @@ function mb_str_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT, $encod
     return $before . $str . $after;
 }
 
+/**
+ * Return $namespace prefixed with a / if it is given
+ *
+ * Removes any \ chars from the string
+ *
+ * @param      string  $namespace  [description]
+ *
+ * @return     string
+ */
+function namespaceFilename(string $namespace)
+{
+  if (!empty($namespace)) {
+    $namespace = DIRECTORY_SEPARATOR . '/' . trim($namespace,'\\/');
+  }
+  return $namespace;
+}
+
+/**
+ * Format Namespace with / in front
+ *
+ * @param      string  $namespace  The namespace
+ */
+function formatNamespace(string $namespace)
+{
+  if (!empty($namespace)) {
+    $namespace = '/' . trim($namespace,'\\/');
+  }
+
+  return $namespace;
+}
+
 #####################################################################################################
 
   # Output format (depricated)
@@ -57,10 +89,16 @@ function mb_str_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT, $encod
   ($ddl) ?? $ddl = $_POST["ddl"];
 
   # Get the Namespace (GET, POST order)
+  #   This is used to prefix all MODEL & ENTITY names.
+  #   Controllers : "\App\Controllers\v1\" . $namespace . "\"
+  #   Models      : "\App\Models\" . $namespace . "\"
+  #   DB          : "\App\Models\" . $namespace . "\Db"
+  #   Tests       : "\App\Tests\" . $namespace . "\"
   $namespace = $_GET['namespace'] ?? $_POST['namespace'] ?? '';
-  if (empty($namespace)) {
-    $namespace = '\\App\\Db';
-  }
+  $namespace = trim($namespace,'\\/'); // Remove leading+trailing \ and /
+
+  # Package name
+  $package = $_GET['package'] ?? $_POST['package'] ?? '';
 
   # Show HTML form if no DDL sent via POST
   if (empty($ddl)) {
@@ -75,11 +113,14 @@ function mb_str_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT, $encod
       echo '<h1>DaoGen for Spin-Framework</h1>';
 
       echo '<h3>Database or Table DDL (MySql & Firebird accepted)<h3>';
+      echo '<p>';
       echo '<form method="post" action="DaoGen.php">';
-      echo 'Namespace <input type="text" name="namespace" value="'.$namespace.'"></br>';
+      echo 'Namespace </b><input type="text" name="namespace" value="'.$namespace.'"></br>';
+      echo 'Package </b><input type="text" name="package" value="'.$package.'"></br>';
       echo '<textarea name="ddl" id="ddl" rows="30" cols="160" placeholder="Put DDL here">'.$ddl.'</textarea>';
       echo '<br/><input type="submit" value="Submit">';
       echo '</form>';
+      echo '</p>';
       echo '</body></html>';
 
       die;
@@ -96,7 +137,8 @@ function mb_str_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT, $encod
 
   echo 'DaoGen v'.$daoGenVersion.PHP_EOL;
   echo PHP_EOL;
-  echo 'Generating files from '.$database->getName().'. '.count($database->getTables()).' tables'.PHP_EOL;
+  echo 'Generating files from Database `'.$database->getName().'`, '.count($database->getTables()).' tables'.PHP_EOL;
+  echo PHP_EOL;
 
   $t1 = microtime(true);
 
@@ -106,48 +148,55 @@ function mb_str_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT, $encod
   if (!file_exists('output')) mkdir('output');
   if (!file_exists('output/App')) mkdir('output/App');
   if (!file_exists('output/App/Models')) mkdir('output/App/Models');
-  if (!file_exists('output/App/Models/Db')) mkdir('output/App/Models/Db');
+  if (!file_exists('output/App/Models'.namespaceFilename($namespace))) mkdir('output/App/Models'.namespaceFilename($namespace));
+  if (!file_exists('output/App/Models'.namespaceFilename($namespace).'/Db')) mkdir('output/App/Models'.namespaceFilename($namespace).'/Db');
   if (!file_exists('output/App/Controllers')) mkdir('output/App/Controllers');
   if (!file_exists('output/App/Controllers/v1')) mkdir('output/App/Controllers/v1');
+  if (!file_exists('output/App/Controllers/v1'.namespaceFilename($namespace))) mkdir('output/App/Controllers/v1'.namespaceFilename($namespace));
   if (!file_exists('output/App/Tests')) mkdir('output/App/Tests');
+  if (!file_exists('output/App/Tests'.namespaceFilename($namespace))) mkdir('output/App/Tests'.namespaceFilename($namespace));
 
   if (count($database->getTables())>0) {
+    # Options array
+    $options['namespace'] = $namespace;
+    $options['package'] = $package;
+
     # For each table ...
     foreach ($database->getTables() as $table)
     {
       echo 'Table '.$table->getTableName().PHP_EOL;
 
       # Generate Entity files
-      $entity = new \Entity($table);
+      $entity = new \Entity($table, $options);
       $filename = $table->getClassName().'Entity.php';
-      echo ' > Entity:     '.$filename.PHP_EOL;
+      echo ' > Entity:     /App/Models'.formatNamespace($namespace).'/'.$filename.PHP_EOL;
       $source = $entity->getPhpSource();
-      file_put_contents('Output/App/Models/'.$filename, $source );
+      file_put_contents('Output/App/Models'.namespaceFilename($namespace).'/'.$filename, $source );
 
       # Generate DAO files
-      $dao = new \Dao($table);
+      $dao = new \Dao($table, $options);
       $filenameDao = $table->getClassName().'Dao.php';
-      echo ' > Dao:        '.$filenameDao.PHP_EOL;
+      echo ' > Dao:        /App/Models'.formatNamespace($namespace).'/Db/'.$filenameDao.PHP_EOL;
       $source = $dao->getPhpSource();
-      file_put_contents('Output/App/Models/Db/'.$filenameDao, $source );
+      file_put_contents('Output/App/Models'.namespaceFilename($namespace).'/Db/'.$filenameDao, $source );
 
       # Generate Conrollers
-      $controller = new \Controller($table);
+      $controller = new \Controller($table, $options);
       $filenameController = $table->getClassName().'Controller.php';
-      echo ' > Controller: '.$filenameController.PHP_EOL;
+      echo ' > Controller: /App/Controllers/v1'.formatNamespace($namespace).'/'.$filenameController.PHP_EOL;
       $source = $controller->getPhpSource();
-      file_put_contents('Output/App/Controllers/v1/'.$filenameController, $source );
+      file_put_contents('Output/App/Controllers/v1'.namespaceFilename($namespace).'/'.$filenameController, $source );
 
       # Generate tests
-      $test = new \Test($table);
+      $test = new \Test($table, $options);
       $filenameTest = $table->getClassName().'EntityTest.php';
-      echo ' > Test:       '.$filenameTest.PHP_EOL;
+      echo ' > Test:       /App/Tests'.formatNamespace($namespace).'/'.$filenameTest.PHP_EOL;
       $source = $test->getPhpSource();
-      file_put_contents('Output/App/Tests/'.$filenameTest, $source );
+      file_put_contents('Output/App/Tests'.namespaceFilename($namespace).'/'.$filenameTest, $source );
     }
 
     # Copy AbstractBase* files to output
-    copy ('AbstractBaseDao.php',    'Output/App/Models/Db/AbstractBaseDao.php');
+    copy ('AbstractBaseDao.php',    'Output/App/Models/AbstractBaseDao.php');
     copy ('AbstractBaseEntity.php', 'Output/App/Models/AbstractBaseEntity.php');
   }
 

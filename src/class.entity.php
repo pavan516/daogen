@@ -1,6 +1,8 @@
 <?php
 /**
  * Represents an Entity (Database Class representing a row)
+ *
+ * All entities are saved in "\App\Models\<Namespace>"
  */
 ##############################################################################################################
 
@@ -10,12 +12,38 @@ class Entity
   protected $type;
   protected $options;
   protected $namespace;
+  protected $package;
 
+  /**
+   * Constructor
+   *
+   * @param      <type>  $table    The table
+   * @param      array   $options  The options
+   */
   public function __construct($table=null, array $options=[])
   {
     $this->table = $table;
     $this->options = $options;
-    $this->namespace = $options['namespace'] ?? '\\App\\Models';
+    $this->namespace = $this->formatNamespace($options['namespace'] ?? '');
+    $this->package = $options['package'] ?? '[Package]';
+  }
+
+  /**
+   * Formats the Namespace correctly
+   *
+   * Adds a "\" in front of the namespace if given, empty otherwise
+   *
+   * @param      string  $namespace  The namespace
+   *
+   * @return     string
+   */
+  protected function formatNamespace(string $namespace)
+  {
+    if (!empty($namespace)) {
+      $namespace = '\\' . trim($namespace,'\\/');
+    }
+
+    return $namespace;
   }
 
 
@@ -40,7 +68,7 @@ class Entity
     $s .= ' *  Generated with DaoGen v'.$daoGenVersion.PHP_EOL;
     $s .= ' *'.PHP_EOL;
     $s .= ' * @since    '.(new \DateTime('now',new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z').PHP_EOL;
-    $s .= ' * @package  Nofuzz Appliction'.PHP_EOL;
+    $s .= ' * @package  '.$this->package.PHP_EOL;
     $s .= ' */'.PHP_EOL;
     $s .= '#########################################################################################'.PHP_EOL;
 
@@ -58,10 +86,10 @@ class Entity
     $s .= "#########################################################################################".PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= 'namespace '.ltrim($this->namespace,'\\').';'.PHP_EOL;
+    $s .= 'namespace \\App\\Models'.$this->namespace.';'.PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= 'use \\'.ltrim($this->namespace,'\\').'\\AbstractBaseEntity;'.PHP_EOL;
+    $s .= 'use \\App\\Models\\AbstractBaseEntity;'.PHP_EOL;
     $s .= PHP_EOL;
 
     $s .= '/** '.PHP_EOL;
@@ -133,6 +161,11 @@ class Entity
     foreach ($this->table->getFields() as $field)
     {
       # Getter
+      $s .= '  /**'.PHP_EOL;
+      $s .= '   * Get '.$field->getUcwName().PHP_EOL;
+      $s .= '   *'.PHP_EOL;
+      $s .= '   * @return     self'.$field->getType().PHP_EOL;
+      $s .= '   */'.PHP_EOL;
       $s .= '  public function get'.$field->getUcwName().'()'.PHP_EOL;
       $s .= '  {'.PHP_EOL;
       // if ($field->isInt()) {
@@ -147,6 +180,11 @@ class Entity
       $s .= PHP_EOL;
 
       # Setter
+      $s .= '  /**'.PHP_EOL;
+      $s .= '   * Set '.$field->getUcwName().PHP_EOL;
+      $s .= '   *'.PHP_EOL;
+      $s .= '   * @return     '.PHP_EOL;
+      $s .= '   */'.PHP_EOL;
       $s .= '  public function set'.$field->getUcwName().'($'.$field->getName().')'.PHP_EOL;
       $s .= '  {'.PHP_EOL;
       // if ($field->isInt()) {
@@ -161,8 +199,8 @@ class Entity
         $s .= '    $this->'.$field->getName().' = $'.$field->getName().';'.PHP_EOL;
         $s .= PHP_EOL;
         $s .= '    if (!is_null($'.$field->getName().')) {'.PHP_EOL;
-        $s .= '      $d = new \DateTime($'.$field->getName().');'.PHP_EOL;
-        $s .= '      $d->setTimeZone(new \DateTimeZone("UTC"));'.PHP_EOL;
+        $s .= '      $d = new \DateTime($'.$field->getName().', new \DateTimeZone("UTC"));'.PHP_EOL;
+        // $s .= '      $d->setTimeZone(new \DateTimeZone("UTC"));'.PHP_EOL;
         $s .= '      $this->'.$field->getName().' = $d->format("Y-m-d\TH:i:s\Z");'.PHP_EOL;
         $s .= '    }'.PHP_EOL;
       } else {

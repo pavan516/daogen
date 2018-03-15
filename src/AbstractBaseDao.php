@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace App\Models\Db;
+namespace App\Models;
 
 use \Spin\Database\PdoConnection;
 use \Spin\Database\PdoConnectionInterface;

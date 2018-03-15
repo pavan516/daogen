@@ -18,12 +18,38 @@ class Dao
   protected $type;
   protected $options;
   protected $namespace;
+  protected $package;
 
+  /**
+   * Constructor
+   *
+   * @param      <type>  $table    The table
+   * @param      array   $options  The options
+   */
   public function __construct($table=null, array $options=[])
   {
     $this->table = $table;
     $this->options = $options;
-    $this->namespace = $options['namespace'] ?? '\\App\\Models';
+    $this->namespace = $this->formatNamespace($options['namespace'] ?? '');
+    $this->package = $options['package'] ?? '[Package]';
+  }
+
+  /**
+   * Formats the Namespace correctly
+   *
+   * Adds a "\" in front of the namespace if given, empty otherwise
+   *
+   * @param      string  $namespace  The namespace
+   *
+   * @return     string
+   */
+  protected function formatNamespace(string $namespace)
+  {
+    if (!empty($namespace)) {
+      $namespace = '\\' . trim($namespace,'\\/');
+    }
+
+    return $namespace;
   }
 
   /**
@@ -46,18 +72,18 @@ class Dao
     $s .= ' *'.PHP_EOL;
     $s .= ' *  Generated with DaoGen v'.$daoGenVersion.PHP_EOL;
     $s .= ' *'.PHP_EOL;
-    $s .= ' * @since    '.(new \DateTime('now',new \DateTimeZone('UTC')))->format('Y-m-d H:i:s').PHP_EOL;
-    $s .= ' * @package  App\\Db'.PHP_EOL;
+    $s .= ' * @since    '.(new \DateTime('now',new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z').PHP_EOL;
+    $s .= ' * @package  '.$this->package.PHP_EOL;
     $s .= ' */'.PHP_EOL;
     $s .= '#########################################################################################'.PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= 'namespace '.ltrim($this->namespace,'\\').'\\Db;'.PHP_EOL;
+    $s .= 'namespace \\App\\Models'.$this->namespace.'\\Db;'.PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= 'use \\'.ltrim($this->namespace,'\\').'\\AbstractBaseEntity;'.PHP_EOL;
-    $s .= 'use \\'.ltrim($this->namespace,'\\').'\\Db\\AbstractBaseDao;'.PHP_EOL;
-    $s .= 'use \\'.ltrim($this->namespace,'\\').'\\'.$this->table->getClassName().'Entity;'.PHP_EOL;
+    $s .= 'use \\App\\Models\\AbstractBaseEntity;'.PHP_EOL;
+    $s .= 'use \\App\\Models\\AbstractBaseDao;'.PHP_EOL;
+    $s .= 'use \\App\\Models'.$this->namespace.'\\'.$this->table->getClassName().'Entity;'.PHP_EOL;
     $s .= PHP_EOL;
 
     $s .= '/** '.PHP_EOL;

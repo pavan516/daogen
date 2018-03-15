@@ -22,6 +22,13 @@ class Database
   protected $type;
   protected $tables = null;
 
+  /**
+   * Constructor
+   *
+   * @param      string  $name     The name
+   * @param      string  $ddl      The ddl
+   * @param      array   $options  The options
+   */
   public function __construct(string $name, string $ddl='', array $options=[])
   {
     $ddl = urldecode($ddl);

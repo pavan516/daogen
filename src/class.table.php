@@ -2,7 +2,7 @@
 /**
  * Database Entity & Dao class generator
  *
- * @package    DaoGen   
+ * @package    DaoGen
  */
 ##############################################################################################################
 
@@ -22,10 +22,10 @@ class Table
 
   /**
    * Constructor
-   * 
-   * @param [type] $database [description]
-   * @param string $ddl      [description]
-   * @param array  $options  [description]
+   *
+   * @param      [type]  $database  [description]
+   * @param      string  $ddl       [description]
+   * @param      array   $options   [description]
    */
   public function __construct($database, string $ddl='', array $options=[])
   {
@@ -67,7 +67,7 @@ class Table
 
   /**
    * Get Table Name
-   * 
+   *
    * @return string
    */
   public function getTableName()
@@ -77,7 +77,7 @@ class Table
 
   /**
    * Get class Name
-   * 
+   *
    * @return string
    */
   public function getClassName()
@@ -87,7 +87,7 @@ class Table
 
   /**
    * Get all fields
-   * 
+   *
    * @return array
    */
   public function getFields()
@@ -97,7 +97,7 @@ class Table
 
   /**
    * Check if table has a field by the name
-   * 
+   *
    * @param  string  $fieldName [description]
    * @return boolean
    */

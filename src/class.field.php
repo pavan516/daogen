@@ -25,6 +25,12 @@ class Field
   protected $default;
   protected $notNull = false;
 
+  /**
+   * Constructor
+   *
+   * @param      string  $fieldDef  The field definition
+   * @param      array   $options   The options
+   */
   public function __construct(string $fieldDef='', array $options=[])
   {
     # Remove double spaces

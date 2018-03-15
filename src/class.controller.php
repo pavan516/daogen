@@ -9,14 +9,39 @@ class Controller
   protected $table;
   protected $options;
   protected $namespace;
+  protected $package;
 
+  /**
+   * Constructor
+   *
+   * @param      <type>  $table    The table
+   * @param      array   $options  The options
+   */
   public function __construct($table=null, array $options=[])
   {
     $this->table = $table;
     $this->options = $options;
-    $this->namespace = $options['namespace'] ?? '\\App\\Controllers\\v1';
+    $this->namespace = $this->formatNamespace($options['namespace'] ?? '');
+    $this->package = $options['package'] ?? '[Package]';
   }
 
+  /**
+   * Formats the Namespace correctly
+   *
+   * Adds a "\" in front of the namespace if given, empty otherwise
+   *
+   * @param      string  $namespace  The namespace
+   *
+   * @return     string
+   */
+  protected function formatNamespace(string $namespace)
+  {
+    if (!empty($namespace)) {
+      $namespace = '\\' . trim($namespace,'\\/');
+    }
+
+    return $namespace;
+  }
 
   /**
    * Output as a PHP Source
@@ -38,8 +63,8 @@ class Controller
     $s .= " *".PHP_EOL;
     $s .= " *  Generated with DaoGen v".$daoGenVersion.PHP_EOL;
     $s .= " *".PHP_EOL;
-    $s .= " * @since    ".(new \DateTime('now',new \DateTimeZone("UTC")))->format("Y-m-d H:i:s").PHP_EOL;
-    $s .= " * @package  Nofuzz Appliction".PHP_EOL;
+    $s .= ' * @since    '.(new \DateTime('now',new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z').PHP_EOL;
+    $s .= " * @package  ".$this->package.PHP_EOL;
     $s .= " */".PHP_EOL;
     $s .= "#########################################################################################".PHP_EOL;
 
@@ -57,10 +82,15 @@ class Controller
     $s .= "#########################################################################################".PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= 'namespace '.ltrim($this->namespace,'\\').';'.PHP_EOL;
+    $s .= 'namespace \\App\\Controllers\\v1'.$this->namespace.';'.PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= "class ".$this->table->getClassName()."Controller extends \\Nofuzz\\Controller".PHP_EOL;
+    $s .= 'use \\Spin\\Core\\Controller;'.PHP_EOL;
+    $s .= 'use \\App\\Models'.$this->namespace.'\\'.$this->table->getClassName().'Entity;'.PHP_EOL;
+    $s .= 'use \\App\\Models'.$this->namespace.'\\Db\\'.$this->table->getClassName().'Dao;'.PHP_EOL;
+    $s .= PHP_EOL;
+
+    $s .= "class ".$this->table->getClassName()."Controller extends Controller".PHP_EOL;
     $s .= "{".PHP_EOL;
 
     # initialize
@@ -84,17 +114,32 @@ class Controller
     $s .= '  public function handleGET(array $args)'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
     if ($this->table->hasField('uuid')) {
+      $s .= '    $item = null;'.PHP_EOL;
       $s .= '    $parUuid = $args[\'uuid\'] ?? null;'.PHP_EOL;
       $s .= PHP_EOL;
       $s .= '    if (!empty($parUuid)) {'.PHP_EOL;
-      $s .= '      $item = (new \\App\\Db\\'.$this->table->getClassName().'Dao())->fetchBy(\'uuid\',$parUuid);'.PHP_EOL;
+      $s .= '      $item = (new '.$this->table->getClassName().'Dao())->fetchBy(\'uuid\',$parUuid);'.PHP_EOL;
       $s .= '      if ($item) $items[] = $item;'.PHP_EOL;
       $s .= '    } else {'.PHP_EOL;
-      $s .= '      $items = (new \\App\\Db\\'.$this->table->getClassName().'Dao())->fetchAll();'.PHP_EOL;
+      $s .= '      $items = (new '.$this->table->getClassName().'Dao())->fetchAll();'.PHP_EOL;
+      $s .= '    }'.PHP_EOL;
+    } else
+    if ($this->table->hasField('code')) {
+      $s .= '    $parCode = $args[\'code\'] ?? null;'.PHP_EOL;
+      $s .= PHP_EOL;
+      $s .= '    if (!empty($parCode)) {'.PHP_EOL;
+      $s .= '      $item = (new '.$this->table->getClassName().'Dao())->fetchBy(\'code\',$parCode);'.PHP_EOL;
+      $s .= '      if ($item) $items[] = $item;'.PHP_EOL;
+      $s .= '    } else {'.PHP_EOL;
+      $s .= '      $items = (new '.$this->table->getClassName().'Dao())->fetchAll();'.PHP_EOL;
       $s .= '    }'.PHP_EOL;
     } else {
-      $s .= '    $items = (new \\App\\Db\\'.$this->table->getClassName().'Dao())->fetchAll();'.PHP_EOL;
+      $s .= '    $items = (new '.$this->table->getClassName().'Dao())->fetchAll();'.PHP_EOL;
     }
+    $s .= PHP_EOL;
+    $s .= '    if (is_null($item)) {'.PHP_EOL;
+    $s .= '      return responseJsonError(\'Not found\',\'\',404);'.PHP_EOL;
+    $s .= '    }'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    $data = [];'.PHP_EOL;
     $s .= '    foreach ($items as $item)'.PHP_EOL;
@@ -113,29 +158,28 @@ class Controller
     $s .= '  public function handlePOST(array $args)'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
     $s .= '    # Validate HTTP Request "Content-type"'.PHP_EOL;
-    $s .= '    if (!preg_match(\'/application\/json/i\',(request()->getHeader(\'Content-Type\')[0] ?? \'\'))) {'.PHP_EOL;
-    $s .= '      return responseJsonError(\'Invalid Content-Type\',\'Content-Type must be "application-json"\',500);'.PHP_EOL;
-    $s .= PHP_EOL;
+    $s .= '    if (!preg_match(\'/application\/json/i\',(getRequest()->getHeader(\'Content-Type\')[0] ?? \'\'))) {'.PHP_EOL;
+    $s .= '      return responseJsonError(\'Bad request\',\'Content-Type must be "application-json"\',400);'.PHP_EOL;
     $s .= '    }'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    # Decode payload'.PHP_EOL;
-    $s .= '    $body = (json_decode(request()->getBody()->getContents(),true) ?? []);'.PHP_EOL;
+    $s .= '    $body = (json_decode(getRequest()->getBody()->getContents(),true) ?? []);'.PHP_EOL;
     $s .= '    if (count($body)==0) {'.PHP_EOL;
-    $s .= '      return responseJsonError(\'Invalid post body\',\'\',500);'.PHP_EOL;
+    $s .= '      return responseJsonError(\'Bad request\',\'Invalid post body\',400);'.PHP_EOL;
     $s .= '    }'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    // Should check for existance of $item in DB'.PHP_EOL;
     $s .= '    // Ex. using: '.PHP_EOL;
-    $s .= '    //   $item = (new \\App\\Db\\'.$this->table->getClassName().'Dao())->fetchBy(\'id\',$id);'.PHP_EOL;
+    $s .= '    //   $item = (new '.$this->table->getClassName().'Dao())->fetchBy(\'id\',$id);'.PHP_EOL;
     $s .= PHP_EOL;
 
     $s .= '    # Create new Item, set properties'.PHP_EOL;
-    $s .= '    $item = new \\App\\Db\\'.$this->table->getClassName().'Entity($body);'.PHP_EOL;
+    $s .= '    $item = new '.$this->table->getClassName().'Entity($body);'.PHP_EOL;
     foreach ($this->table->getFields() as $field) {
       $s .= '    // $item->set'.$field->getUcwName().'('.$field->getDefault('php').');'.PHP_EOL;
     }
     $s .= PHP_EOL;
-    $s .= '    $ok = (new \\App\\Db\\'.$this->table->getClassName().'Dao())->insert($item);'.PHP_EOL;
+    $s .= '    $ok = (new '.$this->table->getClassName().'Dao())->insert($item);'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    if (!$ok) {'.PHP_EOL;
     $s .= PHP_EOL;
@@ -158,22 +202,43 @@ class Controller
     $s .= '   */'.PHP_EOL;
     $s .= '  public function handlePUT(array $args)'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
+    if ($this->table->hasField('uuid')) {
+      $s .= '    $parUuid = $args[\'uuid\'] ?? null;'.PHP_EOL;
+      $s .= PHP_EOL;
+    } else
+    if ($this->table->hasField('code')) {
+      $s .= '    $parCode = $args[\'code\'] ?? null;'.PHP_EOL;
+      $s .= PHP_EOL;
+    }
     $s .= '    # Validate HTTP Request "Content-type"'.PHP_EOL;
-    $s .= '    if (!preg_match(\'/application\/json/i\',(request()->getHeader(\'Content-Type\')[0] ?? \'\'))) {'.PHP_EOL;
-    $s .= '      return responseJsonError(\'Invalid Content-Type\',\'Content-Type must be "application-json"\',500);'.PHP_EOL;
+    $s .= '    if (!preg_match(\'/application\/json/i\',(getRequest()->getHeader(\'Content-Type\')[0] ?? \'\'))) {'.PHP_EOL;
+    $s .= '      return responseJsonError(\'Bad request\',\'Content-Type must be "application-json"\',400);'.PHP_EOL;
     $s .= '    }'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    # Decode payload'.PHP_EOL;
-    $s .= '    $body = (json_decode(request()->getBody()->getContents(),true) ?? []);'.PHP_EOL;
+    $s .= '    $body = (json_decode(getRequest()->getBody()->getContents(),true) ?? []);'.PHP_EOL;
     $s .= '    if (count($body)==0) {'.PHP_EOL;
-    $s .= '      return responseJsonError(\'Invalid post body\',\'\',500);'.PHP_EOL;
+    $s .= '      return responseJsonError(\'Bad request\',\'Invalid post body\',400);'.PHP_EOL;
     $s .= '    }'.PHP_EOL;
     $s .= PHP_EOL;
-    $s .= '    $item = new \\App\\Db\\'.$this->table->getClassName().'Entity($body);'.PHP_EOL;
+
+    if ($this->table->hasField('uuid')) {
+      $s .= '    $item = (new '.$this->table->getClassName().'Dao())->fetchBy(\'uuid\',$parUuid);'.PHP_EOL;
+    } else
+    if ($this->table->hasField('code')) {
+      $s .= '    $item = (new '.$this->table->getClassName().'Dao())->fetchBy(\'code\',$parCode);'.PHP_EOL;
+    } else {
+      $s .= '    $item = new '.$this->table->getClassName().'Entity($body);'.PHP_EOL;
+    }
     $s .= PHP_EOL;
-    $s .= '    // Should check that all parameters/properties are correct in $item'.PHP_EOL;
+
+    $s .= '    # Set all fields from $body'.PHP_EOL;
+    foreach ($this->table->getFields() as $field) {
+      $s .= '    // $item->set'.$field->getUcwName().'($body[\''.$field->getName().'\']);'.PHP_EOL;
+    }
     $s .= PHP_EOL;
-    $s .= '    $ok = (new \\App\\Db\\'.$this->table->getClassName().'Dao())->update($item);'.PHP_EOL;
+
+    $s .= '    $ok = (new '.$this->table->getClassName().'Dao())->update($item);'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    if (!$ok) {'.PHP_EOL;
     $s .= '      logger()->error(\'Failed to update in database\','.PHP_EOL;
@@ -195,13 +260,23 @@ class Controller
     $s .= '   */'.PHP_EOL;
     $s .= '  public function handleDELETE(array $args)'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
-    $s .= '    $parUuid = $args[\'uuid\'] ?? null;'.PHP_EOL;
+    if ($this->table->hasField('uuid')) {
+      $s .= '    $parUuid = $args[\'uuid\'] ?? null;'.PHP_EOL;
+    } else
+    if ($this->table->hasField('code')) {
+      $s .= '    $parCode = $args[\'code\'] ?? null;'.PHP_EOL;
+    }
     $s .= PHP_EOL;
     $s .= '    // Should check Authorization to perform delete of $item'.PHP_EOL;
     $s .= PHP_EOL;
-    $s .= '    $item = (new \\App\\Db\\'.$this->table->getClassName().'Dao())->fetchBy(\'uuid\',$parUuid);'.PHP_EOL;
+    if ($this->table->hasField('uuid')) {
+      $s .= '    $item = (new '.$this->table->getClassName().'Dao())->fetchBy(\'uuid\',$parUuid);'.PHP_EOL;
+    } else
+    if ($this->table->hasField('code')) {
+      $s .= '    $item = (new '.$this->table->getClassName().'Dao())->fetchBy(\'code\',$parCode);'.PHP_EOL;
+    }
     $s .= '    if ($item) {'.PHP_EOL;
-    $s .= '      $ok = (new \\App\\Db\\'.$this->table->getClassName().'Dao())->delete($item);'.PHP_EOL;
+    $s .= '      $ok = (new '.$this->table->getClassName().'Dao())->delete($item);'.PHP_EOL;
     $s .= '    }'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    return response(\'\',204);'.PHP_EOL;
