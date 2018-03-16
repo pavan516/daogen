@@ -146,15 +146,16 @@ function formatNamespace(string $namespace)
 
   # Make dirs
   if (!file_exists('output')) mkdir('output');
-  if (!file_exists('output/App')) mkdir('output/App');
-  if (!file_exists('output/App/Models')) mkdir('output/App/Models');
-  if (!file_exists('output/App/Models'.namespaceFilename($namespace))) mkdir('output/App/Models'.namespaceFilename($namespace));
-  if (!file_exists('output/App/Models'.namespaceFilename($namespace).'/Db')) mkdir('output/App/Models'.namespaceFilename($namespace).'/Db');
-  if (!file_exists('output/App/Controllers')) mkdir('output/App/Controllers');
-  if (!file_exists('output/App/Controllers/v1')) mkdir('output/App/Controllers/v1');
-  if (!file_exists('output/App/Controllers/v1'.namespaceFilename($namespace))) mkdir('output/App/Controllers/v1'.namespaceFilename($namespace));
-  if (!file_exists('output/App/Tests')) mkdir('output/App/Tests');
-  if (!file_exists('output/App/Tests'.namespaceFilename($namespace))) mkdir('output/App/Tests'.namespaceFilename($namespace));
+  if (!file_exists('output/src')) mkdir('output/src');
+  if (!file_exists('output/src/app')) mkdir('output/src/app');
+  if (!file_exists('output/src/app/Models')) mkdir('output/src/app/Models');
+  if (!file_exists('output/src/app/Models'.namespaceFilename($namespace))) mkdir('output/src/app/Models'.namespaceFilename($namespace));
+  if (!file_exists('output/src/app/Models'.namespaceFilename($namespace).'/Db')) mkdir('output/src/app/Models'.namespaceFilename($namespace).'/Db');
+  if (!file_exists('output/src/app/Controllers')) mkdir('output/src/app/Controllers');
+  if (!file_exists('output/src/app/Controllers/v1')) mkdir('output/src/app/Controllers/v1');
+  if (!file_exists('output/src/app/Controllers/v1'.namespaceFilename($namespace))) mkdir('output/src/app/Controllers/v1'.namespaceFilename($namespace));
+  if (!file_exists('output/tests')) mkdir('output/tests');
+  if (!file_exists('output/tests'.namespaceFilename($namespace))) mkdir('output/tests'.namespaceFilename($namespace));
 
   if (count($database->getTables())>0) {
     # Options array
@@ -169,35 +170,35 @@ function formatNamespace(string $namespace)
       # Generate Entity files
       $entity = new \Entity($table, $options);
       $filename = $table->getClassName().'Entity.php';
-      echo ' > Entity:     /App/Models'.formatNamespace($namespace).'/'.$filename.PHP_EOL;
+      echo ' > Entity:     /src/app/Models'.formatNamespace($namespace).'/'.$filename.PHP_EOL;
       $source = $entity->getPhpSource();
-      file_put_contents('Output/App/Models'.namespaceFilename($namespace).'/'.$filename, $source );
+      file_put_contents('Output/src/app/Models'.namespaceFilename($namespace).'/'.$filename, $source );
 
       # Generate DAO files
       $dao = new \Dao($table, $options);
       $filenameDao = $table->getClassName().'Dao.php';
-      echo ' > Dao:        /App/Models'.formatNamespace($namespace).'/Db/'.$filenameDao.PHP_EOL;
+      echo ' > Dao:        /src/app/Models'.formatNamespace($namespace).'/Db/'.$filenameDao.PHP_EOL;
       $source = $dao->getPhpSource();
-      file_put_contents('Output/App/Models'.namespaceFilename($namespace).'/Db/'.$filenameDao, $source );
+      file_put_contents('Output/src/app/Models'.namespaceFilename($namespace).'/Db/'.$filenameDao, $source );
 
       # Generate Conrollers
       $controller = new \Controller($table, $options);
       $filenameController = $table->getClassName().'Controller.php';
-      echo ' > Controller: /App/Controllers/v1'.formatNamespace($namespace).'/'.$filenameController.PHP_EOL;
+      echo ' > Controller: /src/app/Controllers/v1'.formatNamespace($namespace).'/'.$filenameController.PHP_EOL;
       $source = $controller->getPhpSource();
-      file_put_contents('Output/App/Controllers/v1'.namespaceFilename($namespace).'/'.$filenameController, $source );
+      file_put_contents('Output/src/app/Controllers/v1'.namespaceFilename($namespace).'/'.$filenameController, $source );
 
       # Generate tests
       $test = new \Test($table, $options);
       $filenameTest = $table->getClassName().'EntityTest.php';
-      echo ' > Test:       /App/Tests'.formatNamespace($namespace).'/'.$filenameTest.PHP_EOL;
+      echo ' > Test:       /tests'.formatNamespace($namespace).'/'.$filenameTest.PHP_EOL;
       $source = $test->getPhpSource();
-      file_put_contents('Output/App/Tests'.namespaceFilename($namespace).'/'.$filenameTest, $source );
+      file_put_contents('Output/tests'.namespaceFilename($namespace).'/'.$filenameTest, $source );
     }
 
     # Copy AbstractBase* files to output
-    copy ('AbstractBaseDao.php',    'Output/App/Models/AbstractBaseDao.php');
-    copy ('AbstractBaseEntity.php', 'Output/App/Models/AbstractBaseEntity.php');
+    copy ('AbstractBaseDao.php',    'Output/src/app/Models/AbstractBaseDao.php');
+    copy ('AbstractBaseEntity.php', 'Output/src/app/Models/AbstractBaseEntity.php');
   }
 
   $t2 = microtime(true);

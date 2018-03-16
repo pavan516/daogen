@@ -14,6 +14,7 @@ require_once 'class.inflect.php';
  */
 class Table
 {
+  protected $namespace;
   protected $database = null;
   protected $ddl = '';
   protected $tableName = '';
@@ -29,6 +30,7 @@ class Table
    */
   public function __construct($database, string $ddl='', array $options=[])
   {
+    $this->namespace = $this->formatNamespace($options['namespace'] ?? '');
     $this->database = $database;
 
     # Store the Tables full name
@@ -41,6 +43,11 @@ class Table
     # Make Plural words Singular
     $inflect = new Inflect();
     $this->className = $inflect->singularize($this->className);
+
+    # Remove the "Namespace" name if it exists in the beginning
+    if ( strcasecmp($this->className,0,strlen($this->namespace),$this->namespace) == 0 ) {
+      $this->className = substr($this->className,strlen($this->namespace)-1);
+    }
 
     # Extract fields
     $lines = explode("\n", $ddl);
@@ -63,6 +70,24 @@ class Table
 
       $this->fields[] = new \Field( implode(' ',$line_fields), $options );
     }
+  }
+
+  /**
+   * Formats the Namespace correctly
+   *
+   * Adds a "\" in front of the namespace if given, empty otherwise
+   *
+   * @param      string  $namespace  The namespace
+   *
+   * @return     string
+   */
+  protected function formatNamespace(string $namespace)
+  {
+    if (!empty($namespace)) {
+      $namespace = '\\' . trim($namespace,'\\/');
+    }
+
+    return $namespace;
   }
 
   /**
