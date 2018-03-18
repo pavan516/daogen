@@ -99,6 +99,7 @@ function formatNamespace(string $namespace)
 
   # Package name
   $package = $_GET['package'] ?? $_POST['package'] ?? '';
+  $controllerExt = $_GET['controllerExt'] ?? $_POST['controllerExt'] ?? 'AbstractRestController';
 
   # Show HTML form if no DDL sent via POST
   if (empty($ddl)) {
@@ -117,6 +118,7 @@ function formatNamespace(string $namespace)
       echo '<form method="post" action="DaoGen.php">';
       echo 'Namespace </b><input type="text" name="namespace" value="'.$namespace.'"></br>';
       echo 'Package </b><input type="text" name="package" value="'.$package.'"></br>';
+      echo 'Controller Extends </b><input type="text" name="controllerExt" value="'.$controllerExt.'"></br>';
       echo '<textarea name="ddl" id="ddl" rows="30" cols="160" placeholder="Put DDL here">'.$ddl.'</textarea>';
       echo '<br/><input type="submit" value="Submit">';
       echo '</form>';
@@ -161,6 +163,7 @@ function formatNamespace(string $namespace)
     # Options array
     $options['namespace'] = $namespace;
     $options['package'] = $package;
+    $options['extends'] = $controllerExt;
 
     # For each table ...
     foreach ($database->getTables() as $table)

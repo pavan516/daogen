@@ -10,6 +10,7 @@ class Controller
   protected $options;
   protected $namespace;
   protected $package;
+  protected $extends;
 
   /**
    * Constructor
@@ -23,6 +24,7 @@ class Controller
     $this->options = $options;
     $this->namespace = $this->formatNamespace($options['namespace'] ?? '');
     $this->package = $options['package'] ?? '[Package]';
+    $this->extends = $options['extends'] ?? '';
   }
 
   /**
@@ -84,24 +86,30 @@ class Controller
 
     $s .= 'namespace \\App\\Controllers\\v1'.$this->namespace.';'.PHP_EOL;
     $s .= PHP_EOL;
-
+    // Do we custom extend controllers??
+    if (!empty($this->extends)) {
+      $s .= 'use \\App\\Controllers\\'.$this->extends.';'.PHP_EOL;
+    }
+    $s .= 'use \\Spin\\Core\\Controller;'.PHP_EOL;
     $s .= 'use \\Spin\\Core\\Controller;'.PHP_EOL;
     $s .= 'use \\App\\Models'.$this->namespace.'\\'.$this->table->getClassName().'Entity;'.PHP_EOL;
     $s .= 'use \\App\\Models'.$this->namespace.'\\Db\\'.$this->table->getClassName().'Dao;'.PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= "class ".$this->table->getClassName()."Controller extends Controller".PHP_EOL;
+    $s .= "class ".$this->table->getClassName()."Controller extends ".( !empty($this->extends) ? $this->extends : 'Controller').PHP_EOL;
     $s .= "{".PHP_EOL;
 
     # initialize
     $s .= ' /**'.PHP_EOL;
     $s .= '   * Initialize Controller'.PHP_EOL;
     $s .= '   *'.PHP_EOL;
-    $s .= '   * @param  array  $args    Path variables as key=value array'.PHP_EOL;
+    $s .= '   * @param      array   $args   Path variables as key=value array'.PHP_EOL;
+    $s .= '   *'.PHP_EOL;
+    $s .= '   * @return     Response'.PHP_EOL;
     $s .= '   */'.PHP_EOL;
     $s .= '  public function initialize(array $args)'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
-    $s .= '    return parent::initialize($args);'.PHP_EOL;
+    $s .= '    parent::initialize($args);'.PHP_EOL;
     $s .= '  }'.PHP_EOL;
     $s .= PHP_EOL;
 
@@ -109,7 +117,9 @@ class Controller
     $s .= '  /**'.PHP_EOL;
     $s .= '   * Handle GET requests'.PHP_EOL;
     $s .= '   *'.PHP_EOL;
-    $s .= '   * @param  array  $args    Path variables as key=value array'.PHP_EOL;
+    $s .= '   * @param      array   $args   Path variables as key=value array'.PHP_EOL;
+    $s .= '   *'.PHP_EOL;
+    $s .= '   * @return     Response'.PHP_EOL;
     $s .= '   */'.PHP_EOL;
     $s .= '  public function handleGET(array $args)'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
@@ -153,7 +163,9 @@ class Controller
     $s .= '  /**'.PHP_EOL;
     $s .= '   * Handle POST requests'.PHP_EOL;
     $s .= '   *'.PHP_EOL;
-    $s .= '   * @param  array  $args    Path variables as key=value array'.PHP_EOL;
+    $s .= '   * @param      array   $args   Path variables as key=value array'.PHP_EOL;
+    $s .= '   *'.PHP_EOL;
+    $s .= '   * @return     Response'.PHP_EOL;
     $s .= '   */'.PHP_EOL;
     $s .= '  public function handlePOST(array $args)'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
@@ -198,7 +210,9 @@ class Controller
     $s .= '  /**'.PHP_EOL;
     $s .= '   * Handle PUT requests'.PHP_EOL;
     $s .= '   *'.PHP_EOL;
-    $s .= '   * @param  array  $args    Path variables as key=value array'.PHP_EOL;
+    $s .= '   * @param      array   $args   Path variables as key=value array'.PHP_EOL;
+    $s .= '   *'.PHP_EOL;
+    $s .= '   * @return     Response'.PHP_EOL;
     $s .= '   */'.PHP_EOL;
     $s .= '  public function handlePUT(array $args)'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
@@ -256,7 +270,9 @@ class Controller
     $s .= '  /**'.PHP_EOL;
     $s .= '   * Handle DELETE requests'.PHP_EOL;
     $s .= '   *'.PHP_EOL;
-    $s .= '   * @param  array  $args    Path variables as key=value array'.PHP_EOL;
+    $s .= '   * @param      array   $args   Path variables as key=value array'.PHP_EOL;
+    $s .= '   *'.PHP_EOL;
+    $s .= '   * @return     Response'.PHP_EOL;
     $s .= '   */'.PHP_EOL;
     $s .= '  public function handleDELETE(array $args)'.PHP_EOL;
     $s .= '  {'.PHP_EOL;

@@ -43,8 +43,6 @@ class Database
       $this->type = 'Firebird';
     }
 
-    set_time_limit(2);
-
     # Loop all Table Definitions
     while ($ddl = stristr($ddl, 'CREATE TABLE'))
     {

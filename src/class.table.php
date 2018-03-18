@@ -44,9 +44,9 @@ class Table
     $inflect = new Inflect();
     $this->className = $inflect->singularize($this->className);
 
-    # Remove the "Namespace" name if it exists in the beginning
-    if ( strcasecmp($this->className,0,strlen($this->namespace),$this->namespace) == 0 ) {
-      $this->className = substr($this->className,strlen($this->namespace)-1);
+    # Remove the "Namespace" part from classNamr if it exists in the beginning
+    if ( strcasecmp( substr($this->className,0,strlen(trim($this->namespace,'\\'))),trim($this->namespace,'\\')) == 0 ) {
+      $this->className = substr($this->className,strlen(trim($this->namespace,'\\')));
     }
 
     # Extract fields
