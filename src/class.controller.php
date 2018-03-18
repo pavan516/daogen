@@ -86,12 +86,16 @@ class Controller
 
     $s .= 'namespace \\App\\Controllers\\v1'.$this->namespace.';'.PHP_EOL;
     $s .= PHP_EOL;
+    $s .= 'use \\Spin\\Core\\Controller;'.PHP_EOL;
     // Do we custom extend controllers??
     if (!empty($this->extends)) {
       $s .= 'use \\App\\Controllers\\'.$this->extends.';'.PHP_EOL;
     }
-    $s .= 'use \\Spin\\Core\\Controller;'.PHP_EOL;
-    $s .= 'use \\Spin\\Core\\Controller;'.PHP_EOL;
+    if ($this->table->hasField('uuid')) {
+      $s .= '# Helpers'.PHP_EOL;
+      $s .= 'use \\Spin\\Helpers\\UUID;'.PHP_EOL;
+    }
+    $s .= '# Entity & Model'.PHP_EOL;
     $s .= 'use \\App\\Models'.$this->namespace.'\\'.$this->table->getClassName().'Entity;'.PHP_EOL;
     $s .= 'use \\App\\Models'.$this->namespace.'\\Db\\'.$this->table->getClassName().'Dao;'.PHP_EOL;
     $s .= PHP_EOL;
@@ -99,13 +103,11 @@ class Controller
     $s .= "class ".$this->table->getClassName()."Controller extends ".( !empty($this->extends) ? $this->extends : 'Controller').PHP_EOL;
     $s .= "{".PHP_EOL;
 
-    # initialize
+    # Initialize
     $s .= ' /**'.PHP_EOL;
     $s .= '   * Initialize Controller'.PHP_EOL;
     $s .= '   *'.PHP_EOL;
     $s .= '   * @param      array   $args   Path variables as key=value array'.PHP_EOL;
-    $s .= '   *'.PHP_EOL;
-    $s .= '   * @return     Response'.PHP_EOL;
     $s .= '   */'.PHP_EOL;
     $s .= '  public function initialize(array $args)'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
@@ -188,7 +190,13 @@ class Controller
     $s .= '    # Create new Item, set properties'.PHP_EOL;
     $s .= '    $item = new '.$this->table->getClassName().'Entity($body);'.PHP_EOL;
     foreach ($this->table->getFields() as $field) {
-      $s .= '    // $item->set'.$field->getUcwName().'('.$field->getDefault('php').');'.PHP_EOL;
+      if ( strcasecmp($field->getName(),'uuid')==0) {
+        $s .= '    // $item->set'.$field->getUcwName().'( UUID::generate() ); // Generate a UUID v4'.PHP_EOL;
+      } elseif ($field->isDateTime()) {
+        $s .= '    // $item->set'.$field->getUcwName().'( (new \DateTime(\'now\',new \DateTimeZone(\'UTC\')))->format(\'Y-m-d\TH:i:s\Z\') ); // UTC Date Time'.PHP_EOL;
+      } else {
+        $s .= '    // $item->set'.$field->getUcwName().'('.$field->getDefault('php').');'.PHP_EOL;
+      }
     }
     $s .= PHP_EOL;
     $s .= '    $ok = (new '.$this->table->getClassName().'Dao())->insert($item);'.PHP_EOL;
