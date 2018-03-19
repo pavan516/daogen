@@ -78,7 +78,7 @@ class Dao
     $s .= '#########################################################################################'.PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= 'namespace \\App\\Models'.$this->namespace.'\\Db;'.PHP_EOL;
+    $s .= 'namespace App\\Models'.$this->namespace.'\\Db;'.PHP_EOL;
     $s .= PHP_EOL;
 
     $s .= 'use \\App\\Models\\AbstractBaseEntity;'.PHP_EOL;

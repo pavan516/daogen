@@ -10,7 +10,7 @@
 
 ##############################################################################################################
 
-$daoGenVersion = '0.5.9';
+$daoGenVersion = '0.5.10';
 
 require_once 'class.database.php';
 require_once 'class.entity.php';

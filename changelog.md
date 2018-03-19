@@ -1,5 +1,8 @@
 # DaoGen Changelog
 
+## 0.5.10
+* Fixed bug in namesapce strings for all php output files
+
 ## 0.5.9
 * Added Package name as input. Empty package name defaults to `[Package]`
 * Controller generation enhanced, made Spin compatible, better field checking

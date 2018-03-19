@@ -86,7 +86,7 @@ class Entity
     $s .= "#########################################################################################".PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= 'namespace \\App\\Models'.$this->namespace.';'.PHP_EOL;
+    $s .= 'namespace App\\Models'.$this->namespace.';'.PHP_EOL;
     $s .= PHP_EOL;
 
     $s .= 'use \\App\\Models\\AbstractBaseEntity;'.PHP_EOL;

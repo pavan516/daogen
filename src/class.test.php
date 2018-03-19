@@ -69,7 +69,7 @@ class Test
     $s .= "#########################################################################################".PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= 'namespace \\App\\Tests'.$this->namespace.';'.PHP_EOL;
+    $s .= 'namespace App\\Tests'.$this->namespace.';'.PHP_EOL;
     $s .= PHP_EOL;
 
     $s .= 'use \\PHPUnit\\Framework\\TestCase;'.PHP_EOL;
@@ -77,7 +77,7 @@ class Test
     $s .= 'use \\App\\Models'.$this->namespace.'\\Db\\'.$this->table->getClassName().'Dao;'.PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= "class ".$this->table->getClassName()."Test extends TestCase".PHP_EOL;
+    $s .= "class ".$this->table->getClassName()."EntityTest extends TestCase".PHP_EOL;
     $s .= "{".PHP_EOL;
 
     # Properties
