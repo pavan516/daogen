@@ -267,7 +267,7 @@ class Controller
     $s .= '        [\'rid\'=>app(\'requestId\'), \'item\'=>$item->asArray()]'.PHP_EOL;
     $s .= '      );'.PHP_EOL;
     $s .= PHP_EOL;
-    $s .= '      return responseJsonError(\'Failed to update item\',\'\',500)'.PHP_EOL;
+    $s .= '      return responseJsonError(\'Failed to update item\',\'\',500);'.PHP_EOL;
     $s .= '    }'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    return responseJson($item->asArray([\'id\']));'.PHP_EOL;
