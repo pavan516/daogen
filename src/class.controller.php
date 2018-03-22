@@ -126,7 +126,7 @@ class Controller
     $s .= '  public function handleGET(array $args)'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
     if ($this->table->hasField('uuid')) {
-      $s .= '    $item = null;'.PHP_EOL;
+      $s .= '    $items = null;'.PHP_EOL;
       $s .= '    $parUuid = $args[\'uuid\'] ?? null;'.PHP_EOL;
       $s .= PHP_EOL;
       $s .= '    if (!empty($parUuid)) {'.PHP_EOL;
@@ -149,7 +149,7 @@ class Controller
       $s .= '    $items = (new '.$this->table->getClassName().'Dao())->fetchAll();'.PHP_EOL;
     }
     $s .= PHP_EOL;
-    $s .= '    if (is_null($item)) {'.PHP_EOL;
+    $s .= '    if (is_null($items)) {'.PHP_EOL;
     $s .= '      return responseJsonError(\'Not found\',\'\',404);'.PHP_EOL;
     $s .= '    }'.PHP_EOL;
     $s .= PHP_EOL;
