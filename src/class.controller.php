@@ -340,6 +340,7 @@ class Controller
       $s .= '      if ( isset($item) ) {'.PHP_EOL;
       $s .= '        return responseJsonError(\'Bad request\',\'An item with {post.code} already exists\',400);'.PHP_EOL;
       $s .= '      }'.PHP_EOL;
+      $s .= '    }'.PHP_EOL;
     }
     $s .= PHP_EOL;
 
@@ -356,7 +357,7 @@ class Controller
     foreach ($this->table->getFields() as $field) {
       if ( strcasecmp($field->getName(),'uuid')==0) {
         $s .= '    // $item->set'.$field->getUcwName().'($body[\''.$field->getName().'\']);'.PHP_EOL;
-      } else {
+      } else
       if ( strcasecmp($field->getName(),'id')==0) {
         $s .= '    // $item->set'.$field->getUcwName().'($body[\''.$field->getName().'\']);'.PHP_EOL;
       } else {
@@ -434,6 +435,7 @@ class Controller
     $s .= '}'.PHP_EOL;
 
     $s .= PHP_EOL;
+
     return $s;
   }
 
