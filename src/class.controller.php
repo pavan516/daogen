@@ -155,7 +155,7 @@ class Controller
     $s .= PHP_EOL;
     $s .= '    $data = [];'.PHP_EOL;
     $s .= '    foreach ($items as $item)'.PHP_EOL;
-    $s .= '      $data[] = $item->asArray();'.PHP_EOL;
+    $s .= '      $data[] = $item->asArray([\'id\']);'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    return responseJson($data);'.PHP_EOL;
     $s .= '  }'.PHP_EOL;
@@ -285,22 +285,39 @@ class Controller
     $s .= '  public function handleDELETE(array $args)'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
     if ($this->table->hasField('uuid')) {
-      $s .= '    $parUuid = $args[\'uuid\'] ?? null;'.PHP_EOL;
+      $s .= '    $par_uuid = $args[\'uuid\'] ?? null;'.PHP_EOL;
+      $s .= PHP_EOL;
+      $s .= '    # Sanity check'.PHP_EOL;
+      $s .= '    if (empty($par_uuid) ) {'.PHP_EOL;
+      $s .= '      return responseJsonError(\'Bad request\',\'Query parameter {uuid} must be specified\',400);'.PHP_EOL;
+      $s .= '    }'.PHP_EOL;
     } else
     if ($this->table->hasField('code')) {
       $s .= '    $parCode = $args[\'code\'] ?? null;'.PHP_EOL;
+      $s .= PHP_EOL;
+      $s .= '    # Sanity check'.PHP_EOL;
+      $s .= '    if (empty($par_code) ) {'.PHP_EOL;
+      $s .= '      return responseJsonError(\'Bad request\',\'Query parameter {code} must be specified\',400);'.PHP_EOL;
+      $s .= '    }'.PHP_EOL;
     }
-    $s .= PHP_EOL;
-    $s .= '    // Should check Authorization to perform delete of $item'.PHP_EOL;
     $s .= PHP_EOL;
     if ($this->table->hasField('uuid')) {
-      $s .= '    $item = (new '.$this->table->getClassName().'Dao())->fetchBy(\'uuid\',$parUuid);'.PHP_EOL;
+      $s .= '    $item = (new '.$this->table->getClassName().'Dao())->fetchBy(\'uuid\',$par_uuid);'.PHP_EOL;
     } else
     if ($this->table->hasField('code')) {
-      $s .= '    $item = (new '.$this->table->getClassName().'Dao())->fetchBy(\'code\',$parCode);'.PHP_EOL;
+      $s .= '    $item = (new '.$this->table->getClassName().'Dao())->fetchBy(\'code\',$par_code);'.PHP_EOL;
     }
-    $s .= '    if ($item) {'.PHP_EOL;
-    $s .= '      $ok = (new '.$this->table->getClassName().'Dao())->delete($item);'.PHP_EOL;
+    $s .= '    if (!$item) {'.PHP_EOL;
+    $s .= '      return responseJsonError(\'Not found\',\'{code} not found\',404);'.PHP_EOL;
+    $s .= '    }'.PHP_EOL;
+    $s .= PHP_EOL;
+    $s .= '    $ok = (new '.$this->table->getClassName().'Dao())->delete($item);'.PHP_EOL;
+    $s .= PHP_EOL;
+    $s .= '    if (!$ok) {'.PHP_EOL;
+    $s .= '      logger()->error(\'Failed to delete in database\', [\'rid\'=>app(\'requestId\'), \'item\'=>$item->asArray()]'.PHP_EOL;
+    $s .= '      );'.PHP_EOL;
+    $s .= PHP_EOL;
+    $s .= '      return responseJsonError(\'Internal error\',\'Failed to delete item\',500);'.PHP_EOL;
     $s .= '    }'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    return response(\'\',204);'.PHP_EOL;
