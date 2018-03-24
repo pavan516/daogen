@@ -362,7 +362,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
    *
    * @return     $item   | false
    */
-  protected function cacheGetItemByField(string $field, string $value)
+  protected function cacheGetItemByField(string $field, $value)
   {
     $cacheKey = static::class.':'.$field.':'.$value;
     if (cache() && cache()->has($cacheKey)) {

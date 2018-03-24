@@ -381,7 +381,7 @@ class Controller
       if ( strcasecmp($field->getName(),'id')==0) {
         $s .= '    // $entity->set'.$field->getUcwName().'($this->body[\''.$field->getName().'\']);'.PHP_EOL;
       } else {
-        $s .= '    $entity->set'.$field->getUcwName().'($this->body[\''.$field->getName().'\'] ?? '.$field->getDefault('PHP').');'.PHP_EOL;
+        $s .= '    $entity->set'.$field->getUcwName().'($this->body[\''.$field->getName().'\'] ?? $entity->get'.$field->getUcwName().'() );'.PHP_EOL;
       }
     }
     $s .= PHP_EOL;
