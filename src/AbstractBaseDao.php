@@ -57,8 +57,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Constructor
    *
-   * @param string  $connectionname    Database ConnectionName
-   * @param int     $cacheTTL          Seconds to Cache the entries. 0=Forever, -1=Do not cache
+   * @param      string  $connectionName  Database ConnectionName
+   * @param      int     $cacheTTL        Seconds to Cache the entries.
+   *                                      0=Forever, -1=Do not cache
    */
   public function __construct(string $connectionName='', int $cacheTTL=-1)
   {
@@ -72,9 +73,10 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Fetch all rows based on $sql and $prams
    *
-   * @param  string $sql    [description]
-   * @param  array  $params [description]
-   * @return array
+   * @param      string  $sql     [description]
+   * @param      array   $params  [description]
+   *
+   * @return     array
    */
   public function fetchCustom(string $sql,array $params=[]): array
   {
@@ -89,7 +91,11 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
       if ($sth=$this->getConnection()->prepare($sql)) {
         # Binds
         foreach ($params as $bind=>$value) {
-          $sth->bindValue(':'.ltrim($bind,':'), $value);
+          if (!is_null($value)) {
+            $sth->bindValue(':'.ltrim($bind,':'), $value);
+          } else {
+            $sth->bindValue(':'.ltrim($bind,':'), $value, \PDO::PARAM_NULL);
+          }
         }
         # Exec
         if ($sth->execute()) {
@@ -114,9 +120,10 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Fetch a record by field
    *
-   * @param  string $field      Field to match agains
-   * @param  mixed $value       Value to match with
-   * @return object | null
+   * @param      string  $field  Field to match agains
+   * @param      mixed   $value  Value to match with
+   *
+   * @return     object  | null
    */
   public function fetchBy(string $field, $value)
   {
@@ -136,9 +143,10 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Fetch all records by a $field matching $value
    *
-   * @param  string $field      Field to match agains
-   * @param  mixed $value       Value to match with
-   * @return array              Array of AbstractBaseEntity objects
+   * @param      string  $field  Field to match agains
+   * @param      mixed   $value  Value to match with
+   *
+   * @return     array   Array of AbstractBaseEntity objects
    */
   public function fetchAllBy(string $field, $value)
   {
@@ -154,9 +162,10 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Execute $sql with $params
    *
-   * @param  string $sql    [description]
-   * @param  array  $params [description]
-   * @return bool
+   * @param      string  $sql     [description]
+   * @param      array   $params  [description]
+   *
+   * @return     bool
    */
   public function execCustom(string $sql, array $params=[]): bool
   {
@@ -171,7 +180,11 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
       {
         # Binds
         foreach ($params as $bind=>$value) {
-          $sth->bindValue(':'.ltrim($bind,':'), $value);
+          if (!is_null($value)) {
+            $sth->bindValue(':'.ltrim($bind,':'), $value);
+          } else {
+            $sth->bindValue(':'.ltrim($bind,':'), $value, \PDO::PARAM_NULL);
+          }
         }
         # Execute
         $result = $sth->execute();
@@ -190,9 +203,10 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Execute $sql with $params
    *
-   * @param  string $sql    [description]
-   * @param  array  $params [description]
-   * @return int            $this->getConnection()->lastInsertId()
+   * @param      string  $sql     [description]
+   * @param      array   $params  [description]
+   *
+   * @return     int     $this->getConnection()->lastInsertId()
    */
   public function execCustomGetLastId(string $sql, array $params=[]): int
   {
@@ -247,9 +261,10 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Fetch Count based on params
    *
-   * @param  string $field    Field to count
-   * @param  array  $params   [description]
-   * @return array
+   * @param      string  $field   Field to count
+   * @param      array   $params  [description]
+   *
+   * @return     array
    */
   public function fetchCount(string $field,array $params=[]): array
   {
@@ -291,8 +306,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Delete
    *
-   * @param  AbstractBaseEntity   &$item
-   * @return bool
+   * @param      AbstractBaseEntity  $item
+   *
+   * @return     bool
    */
   public function delete(AbstractBaseEntity &$item): bool
   {
@@ -317,9 +333,10 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Cache one $item
    *
-   * @param  class      $item         Item to Set in cache
-   * @param  mixed      $ttl          Optional. Overrides default TTL. Seconds
-   * @return bool
+   * @param      class  $item   Item to Set in cache
+   * @param      mixed  $ttl    Optional. Overrides default TTL. Seconds
+   *
+   * @return     bool
    */
   protected function cacheSetItem(AbstractBaseEntity $item, $ttl=null )
   {
@@ -340,9 +357,10 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Get cached $item, based on field name
    *
-   * @param  string       $field         field to search in
-   * @param  string       $value         value to search for
-   * @return $item | false
+   * @param      string  $field  field to search in
+   * @param      string  $value  value to search for
+   *
+   * @return     $item   | false
    */
   protected function cacheGetItemByField(string $field, string $value)
   {
@@ -357,8 +375,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Get cached $item by $id
    *
-   * @param  string       $id         Item ID to look for
-   * @return $item | false
+   * @param      string  $id     Item ID to look for
+   *
+   * @return     $item   | false
    */
   protected function cacheGetById(string $id)
   {
@@ -373,8 +392,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Get cached $item by $code
    *
-   * @param  string       $code         Item code to look for
-   * @return $item | false
+   * @param      string  $code   Item code to look for
+   *
+   * @return     $item   | false
    */
   protected function cacheGetByCode(string $code)
   {
@@ -389,8 +409,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Get cached $item by $uuid
    *
-   * @param  string       $uuid         Item uuid to look for
-   * @return $item | false
+   * @param      string  $uuid   Item uuid to look for
+   *
+   * @return     $item   | false
    */
   protected function cacheGetByUuid(string $uuid)
   {
@@ -405,9 +426,10 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Cache array of all $items
    *
-   * @param  array      $items        Items array to set in cache
-   * @param  mixed      $ttl          Optional. Overrides default TTL. Seconds
-   * @return bool
+   * @param      array  $items  Items array to set in cache
+   * @param      mixed  $ttl    Optional. Overrides default TTL. Seconds
+   *
+   * @return     bool
    */
   protected function cacheSetAll(array $items, $ttl=null)
   {
@@ -424,7 +446,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Clear Cache array of all $items
    *
-   * @return bool
+   * @return     bool
    */
   protected function cacheClearAll()
   {
@@ -438,7 +460,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Get all cached items list
    *
-   * @return array|false
+   * @return     array|false
    */
   protected function cacheGetAll()
   {
@@ -453,8 +475,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Delete an $item from cache
    *
-   * @param  Class    $item           Item to delete from cache
-   * @return bool
+   * @param      Class  $item   Item to delete from cache
+   *
+   * @return     bool
    */
   protected function cacheDelete(AbstractBaseEntity $item)
   {
@@ -473,7 +496,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Wrapper function for PdoConnection.beginTransaction
    *
-   * @return bool
+   * @return     bool
    */
   public function beginTransaction()
   {
@@ -486,7 +509,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Wrapper function for PdoConnection.commit
    *
-   * @return bool
+   * @return     bool
    */
   public function commit()
   {
@@ -499,7 +522,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Wrapper function for PdoConnection.rollback
    *
-   * @return bool
+   * @return     bool
    */
   public function rollback()
   {
@@ -512,9 +535,10 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Execute a SELECT statement
    *
-   * @param  string $sql          SQL statement to execute (SELECT ...)
-   * @param  array  $params       Bind params
-   * @return array                Array with fetched rows
+   * @param      string  $sql     SQL statement to execute (SELECT ...)
+   * @param      array   $params  Bind params
+   *
+   * @return     array   Array with fetched rows
    */
   public function rawQuery(string $sql, array $params=[])
   {
@@ -524,9 +548,11 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Execute an INSERT, UPDATE or DELETE statement
    *
-   * @param  string $sql          SQL statement to execute (INSERT, UPDATE, DELETE ...)
-   * @param  array  $params       Bind params
-   * @return bool                 True if rows affected > 0
+   * @param      string  $sql     SQL statement to execute (INSERT, UPDATE,
+   *                              DELETE ...)
+   * @param      array   $params  Bind params
+   *
+   * @return     bool    True if rows affected > 0
    */
   public function rawExec(string $sql, array $params=[])
   {
@@ -536,8 +562,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Get the DB connection assinged to this DAO object
    *
-   * @param  string $connectionName
-   * @return null | PdoConnectionInterface
+   * @param      string  $connectionName
+   *
+   * @return     null    | PdoConnectionInterface
    */
   public function getConnection(string $connectionName='')
   {
@@ -548,8 +575,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Set the DB connection
    *
-   * @param   PdoConnectionInterface $connection
-   * @return  self
+   * @param      PdoConnectionInterface  $connection
+   *
+   * @return     self
    */
   public function setConnection(?PdoConnectionInterface $connection)
   {
@@ -561,7 +589,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Get Table
    *
-   * @return  string
+   * @return     string
    */
   public function getTable(): string
   {
@@ -571,8 +599,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Set Table
    *
-   * @param   string $table [description]
-   * @return  self
+   * @param      string  $table  [description]
+   *
+   * @return     self
    */
   public function setTable(string $table)
   {
@@ -584,7 +613,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Get CacheTTL
    *
-   * @return  int
+   * @return     int
    */
   public function getCacheTTL(): int
   {
@@ -594,8 +623,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   /**
    * Set CacheTTL
    *
-   * @param   int $cacheTTL  TTL seconds
-   * @return  self
+   * @param      int   $cacheTTL  TTL seconds
+   *
+   * @return     self
    */
   public function setCacheTTL(int $cacheTTL=0)
   {
