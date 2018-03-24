@@ -215,7 +215,11 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
       {
         # Binds
         foreach ($params as $bind=>$value) {
-          $sth->bindValue(':'.ltrim($bind,':'), $value);
+          if (!is_null($value)) {
+            $sth->bindValue(':'.ltrim($bind,':'), $value);
+          } else {
+            $sth->bindValue(':'.ltrim($bind,':'), $value, \PDO::PARAM_NULL);
+          }
         }
         # Execute
         if ($sth->execute()) {
