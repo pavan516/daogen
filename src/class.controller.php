@@ -321,11 +321,6 @@ class Controller
     }
     $s .= PHP_EOL;
     $s .= '    # Verify params'.PHP_EOL;
-    if ($this->table->hasField('uuid')) {
-      $s .= '    if (empty($this->body[\'uuid\'] ?? \'\')) {'.PHP_EOL;
-      $s .= '      return responseJsonError(\'Bad request\',\'{uuid} must be specified\',400);'.PHP_EOL;
-      $s .= '    }'.PHP_EOL;
-    }
     if ($this->table->hasField('code')) {
       $s .= '    if (empty($this->body[\'code\'] ?? \'\')) {'.PHP_EOL;
       $s .= '      return responseJsonError(\'Bad request\',\'{code} must be specified\',400);'.PHP_EOL;
@@ -451,22 +446,27 @@ class Controller
     $s .= PHP_EOL;
 
     if ($this->table->hasField('uuid')) {
-      $s .= '    $item = (new '.$this->table->getClassName().'Dao())->fetchBy(\'uuid\',$par_uuid);'.PHP_EOL;
+      $s .= '    $entity = (new '.$this->table->getClassName().'Dao())->fetchBy(\'uuid\',$args[\'uuid\']);'.PHP_EOL;
+      $s .= PHP_EOL;
+      $s .= '    if (!$entity) {'.PHP_EOL;
+      $s .= '      return responseJsonError(\'Not found\',\'{uuid} not found\',404);'.PHP_EOL;
+      $s .= '    }'.PHP_EOL;
     } else
     if ($this->table->hasField('code')) {
-      $s .= '    $item = (new '.$this->table->getClassName().'Dao())->fetchBy(\'code\',$par_code);'.PHP_EOL;
+      $s .= '    $entity = (new '.$this->table->getClassName().'Dao())->fetchBy(\'code\',$args[\'code\']);'.PHP_EOL;
+      $s .= PHP_EOL;
+      $s .= '    if (!$entity) {'.PHP_EOL;
+      $s .= '      return responseJsonError(\'Not found\',\'{code} not found\',404);'.PHP_EOL;
+      $s .= '    }'.PHP_EOL;
     }
-    $s .= '    if (!$item) {'.PHP_EOL;
-    $s .= '      return responseJsonError(\'Not found\',\'{code} not found\',404);'.PHP_EOL;
-    $s .= '    }'.PHP_EOL;
     $s .= PHP_EOL;
-    $s .= '    $ok = (new '.$this->table->getClassName().'Dao())->delete($item);'.PHP_EOL;
+    $s .= '    # Delete'.PHP_EOL;
+    $s .= '    $ok = (new '.$this->table->getClassName().'Dao())->delete($entity);'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    if (!$ok) {'.PHP_EOL;
-    $s .= '      logger()->error(\'Failed to delete in database\', [\'rid\'=>app(\'requestId\'), \'item\'=>$item->asArray()]'.PHP_EOL;
-    $s .= '      );'.PHP_EOL;
+    $s .= '      logger()->error(\'Failed to delete in database\', [\'rid\'=>app(\'requestId\'), \'entity\'=>$entity->asArray()]);'.PHP_EOL;
     $s .= PHP_EOL;
-    $s .= '      return responseJsonError(\'Internal error\',\'Failed to delete item\',500);'.PHP_EOL;
+    $s .= '      return responseJsonError(\'Internal error\',\'Failed to delete entity\',500);'.PHP_EOL;
     $s .= '    }'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    return response(\'\',204);'.PHP_EOL;
