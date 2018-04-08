@@ -1,5 +1,11 @@
 <?php declare(strict_types=1);
 
+/**
+ * AbstractBaseDao
+ *
+ * @package DaoGen
+ */
+
 namespace App\Models;
 
 use \Spin\Database\PdoConnection;
@@ -48,10 +54,19 @@ interface AbstractBaseDaoInterface
  */
 abstract class AbstractBaseDao implements AbstractBaseDaoInterface
 {
+  /** @var        string          The connection name */
   protected $connectionName;
+
+  /** @var        array           The connection parameters (optional) */
+  protected $params;
+
+  /** @var        PdoConnection   The connection */
   protected $connection;
 
+  /** @var        string          The table name */
   protected $table;
+
+  /** @var        int             The cache TTL for entity Items */
   protected $cacheTTL;
 
   /**
@@ -60,10 +75,12 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
    * @param      string  $connectionName  Database ConnectionName
    * @param      int     $cacheTTL        Seconds to Cache the entries.
    *                                      0=Forever, -1=Do not cache
+   * @param      array   $params          The connection parameters (optional)
    */
-  public function __construct(string $connectionName='', int $cacheTTL=-1)
+  public function __construct(string $connectionName='', int $cacheTTL=-1, array $params=[])
   {
     $this->connectionName = $connectionName;
+    $this->params = $params;
 
     $this->setConnection(null);
     $this->setTable('');
@@ -569,7 +586,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   public function getConnection(string $connectionName='')
   {
     # Obtain the connection from helper function db()
-    return db( (empty($connectionName) ? $this->connectionName : $connectionName) );
+    return db( (empty($connectionName) ? $this->connectionName : $connectionName), $this->params );
   }
 
   /**

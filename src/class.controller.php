@@ -92,9 +92,12 @@ class Controller
       $s .= 'use \\App\\Controllers\\'.$this->extends.';'.PHP_EOL;
     }
     if ($this->table->hasField('uuid')) {
+      $s .= PHP_EOL;
       $s .= '# Helpers'.PHP_EOL;
       $s .= 'use \\Spin\\Helpers\\UUID;'.PHP_EOL;
     }
+    $s .= PHP_EOL;
+
     $s .= '# Entity & Model'.PHP_EOL;
     $s .= 'use \\App\\Models'.$this->namespace.'\\'.$this->table->getClassName().'Entity;'.PHP_EOL;
     $s .= 'use \\App\\Models'.$this->namespace.'\\Db\\'.$this->table->getClassName().'Dao;'.PHP_EOL;
@@ -420,13 +423,13 @@ class Controller
 
     if ($this->table->hasField('uuid')) {
       $s .= '    if (empty($args[\'uuid\'] ?? null) ) {'.PHP_EOL;
-      $s .= '      return responseJsonError(\'Bad request\',\'Query parameter {uuid} must be specified\',400);'.PHP_EOL;
+      $s .= '      return responseJsonError(\'Bad request\',\'{uuid} is mandatory\',400);'.PHP_EOL;
       $s .= '    }'.PHP_EOL;
     } else
     if ($this->table->hasField('code')) {
       $s .= '    # Sanity check'.PHP_EOL;
       $s .= '    if (empty($args[\'code\'] ?? null) ) {'.PHP_EOL;
-      $s .= '      return responseJsonError(\'Bad request\',\'Query parameter {code} must be specified\',400);'.PHP_EOL;
+      $s .= '      return responseJsonError(\'Bad request\',\'{code} is mandatory\',400);'.PHP_EOL;
       $s .= '    }'.PHP_EOL;
     }
     $s .= PHP_EOL;
@@ -460,7 +463,7 @@ class Controller
     $s .= PHP_EOL;
     $s .= '    # Report error if no entity found'.PHP_EOL;
     $s .= '    if (!$entity) {'.PHP_EOL;
-    $s .= '      return responseJsonError(\'Not found\',\'Not found\',404);'.PHP_EOL;
+    $s .= '      return responseJsonError(\'Not found\',\'\',404);'.PHP_EOL;
     $s .= '    }'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= '    # Delete'.PHP_EOL;
