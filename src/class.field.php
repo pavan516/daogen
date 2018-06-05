@@ -80,32 +80,62 @@ class Field
 
   }
 
+  /**
+   * Gets the field definition.
+   *
+   * @return     <type>  The field definition.
+   */
   public function getFieldDef()
   {
     return $this->fieldDef;
   }
 
+  /**
+   * Gets the name.
+   *
+   * @return     <type>  The name.
+   */
   public function getName()
   {
     return trim($this->name,'`');
   }
 
+  /**
+   * Gets the uc name.
+   *
+   * @return     <type>  The uc name.
+   */
   public function getUcName()
   {
     return ucwords($this->getName());
   }
 
+  /**
+   * Gets the ucw name.
+   *
+   * @return     <type>  The ucw name.
+   */
   public function GetUcwName()
   {
     $s = trim($this->getName(),'`');
     return str_replace(' ','',ucwords(str_replace('_',' ',$s)));
   }
 
+  /**
+   * Gets the type.
+   *
+   * @return     <type>  The type.
+   */
   public function getType()
   {
     return $this->type;
   }
 
+  /**
+   * Determines if int.
+   *
+   * @return     boolean  True if int, False otherwise.
+   */
   public function isInt()
   {
     switch (strtoupper($this->getType())) {
@@ -121,6 +151,11 @@ class Field
     return false;
   }
 
+  /**
+   * Determines if numeric.
+   *
+   * @return     boolean  True if numeric, False otherwise.
+   */
   public function isNumeric()
   {
     switch (strtoupper($this->getType())) {
@@ -139,6 +174,11 @@ class Field
     return false;
   }
 
+  /**
+   * Determines if text.
+   *
+   * @return     boolean  True if text, False otherwise.
+   */
   public function isText()
   {
     switch (strtoupper($this->getType())) {
@@ -161,6 +201,12 @@ class Field
 
     return false;
   }
+
+  /**
+   * Determines if date time.
+   *
+   * @return     boolean  True if date time, False otherwise.
+   */
   public function isDateTime()
   {
     switch (strtoupper($this->getType())) {
@@ -173,11 +219,23 @@ class Field
     return false;
   }
 
+  /**
+   * Gets the length.
+   *
+   * @return     <type>  The length.
+   */
   public function getLength()
   {
     return $this->length;
   }
 
+  /**
+   * Gets the default.
+   *
+   * @param      string  $language  The language
+   *
+   * @return     string  The default.
+   */
   public function getDefault(string $language='json')
   {
     $s = 'null';
@@ -208,8 +266,10 @@ class Field
           $s = '"00:00:00"';
           break;
         case 'TIMESTAM':
-        case 'DATETIME':
           $s = '"1970-01-01T00:00:00Z"';
+          break;
+        case 'DATETIME':
+          $s = '""';
           break;
         default:
           $s = '""';
@@ -234,6 +294,11 @@ class Field
     return $s;
   }
 
+  /**
+   * Gets not null.
+   *
+   * @return     <type>  Not null.
+   */
   public function getNotNull()
   {
     return $this->notNull;
