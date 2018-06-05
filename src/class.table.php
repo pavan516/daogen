@@ -30,6 +30,8 @@ class Table
    */
   public function __construct($database, string $ddl='', array $options=[])
   {
+    $ddl = str_replace('`','',$ddl);
+
     $this->namespace = $this->formatNamespace($options['namespace'] ?? '');
     $this->database = $database;
 

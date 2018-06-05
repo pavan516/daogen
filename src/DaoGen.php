@@ -59,7 +59,8 @@ function mb_str_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT, $encod
 function namespaceFilename(string $namespace)
 {
   if (!empty($namespace)) {
-    $namespace = DIRECTORY_SEPARATOR . '/' . trim($namespace,'\\/');
+    $namespace = str_replace('\\','/',$namespace);
+    $namespace = '/' . trim($namespace,'\\/');
   }
   return $namespace;
 }
@@ -72,6 +73,7 @@ function namespaceFilename(string $namespace)
 function formatNamespace(string $namespace)
 {
   if (!empty($namespace)) {
+    $namespace = str_replace('\\','/',$namespace);
     $namespace = '/' . trim($namespace,'\\/');
   }
 
@@ -94,11 +96,11 @@ function formatNamespace(string $namespace)
   #   Models      : "\App\Models\" . $namespace . "\"
   #   DB          : "\App\Models\" . $namespace . "\Db"
   #   Tests       : "\App\Tests\" . $namespace . "\"
-  $namespace = $_GET['namespace'] ?? $_POST['namespace'] ?? '';
+  $namespace = $_GET['namespace'] ?? $_POST['namespace'] ?? 'rest\\v1';
   $namespace = trim($namespace,'\\/'); // Remove leading+trailing \ and /
 
   # Package name
-  $package = $_GET['package'] ?? $_POST['package'] ?? '';
+  $package = $_GET['package'] ?? $_POST['package'] ?? '<application>';
   $controllerExt = $_GET['controllerExt'] ?? $_POST['controllerExt'] ?? 'AbstractRestController';
 
   # Show HTML form if no DDL sent via POST
@@ -109,22 +111,43 @@ function formatNamespace(string $namespace)
       echo '<html>';
       echo '<head>';
       echo  '<title>Entity & Dao class generator</title>';
-      echo '</head>';
-      echo '<body>';
-      echo '<h1>DaoGen for Spin-Framework</h1>';
+      echo '</head>'.PHP_EOL.PHP_EOL;
+      echo '<body>'.PHP_EOL;
+      echo '<h1>DaoGen for Spin-Framework</h1>'.PHP_EOL;
+?>
+<h3>Database or Table DDL (MySql & Firebird accepted)</h3>
+<p>
+ <form method="post" action="DaoGen.php">
+  
+  <table>
+    <thead>
+    </thead>
 
-      echo '<h3>Database or Table DDL (MySql & Firebird accepted)<h3>';
-      echo '<p>';
-      echo '<form method="post" action="DaoGen.php">';
-      echo 'Namespace </b><input type="text" name="namespace" value="'.$namespace.'"></br>';
-      echo 'Package </b><input type="text" name="package" value="'.$package.'"></br>';
-      echo 'Controller Extends </b><input type="text" name="controllerExt" value="'.$controllerExt.'"></br>';
-      echo '<textarea name="ddl" id="ddl" rows="30" cols="160" placeholder="Put DDL here">'.$ddl.'</textarea>';
-      echo '<br/><input type="submit" value="Submit">';
-      echo '</form>';
-      echo '</p>';
-      echo '</body></html>';
+    <tbody>
+      <tr>
+        <td><b>Namespace</b></td>
+        <td><input type="text" name="namespace" size=32 value="<?php echo $namespace;?>"></td>
+      </tr>
+      <tr>
+        <td><b>Controllers extend</b></td>
+        <td><input type="text" name="controllerExt" size=32 value="<?php echo $controllerExt;?>"></td>
+      </tr>
+      <tr>
+        <td><b>Package name</b></td>
+        <td><input type="text" name="package" size=32 value="<?php echo $package;?>"></td>
+      </tr>      <tr>
+        <td><b>DDL</b></td>
+        <td><textarea name="ddl" id="ddl" rows="30" cols="160" placeholder="Put DDL here"><?php echo $ddl;?></textarea></td>
+      </tr>
+    </tbody>
+  </table>
 
+  <input type="submit" value="Submit">
+ </form>
+</p>
+</body></html>
+
+<?php
       die;
   }
 
@@ -133,6 +156,8 @@ function formatNamespace(string $namespace)
   #
   # Create the files
   #
+
+  $namespace = ucwords($namespace,'\\/');
 
   #
   $database = new \Database( 'Unknown', $ddl, ['namespace'=>$namespace] );
@@ -147,17 +172,9 @@ function formatNamespace(string $namespace)
   header('Content-Type: text/plain');
 
   # Make dirs
-  if (!file_exists('output')) mkdir('output');
-  if (!file_exists('output/src')) mkdir('output/src');
-  if (!file_exists('output/src/app')) mkdir('output/src/app');
-  if (!file_exists('output/src/app/Models')) mkdir('output/src/app/Models');
-  if (!file_exists('output/src/app/Models'.namespaceFilename($namespace))) mkdir('output/src/app/Models'.namespaceFilename($namespace));
-  if (!file_exists('output/src/app/Models'.namespaceFilename($namespace).'/Db')) mkdir('output/src/app/Models'.namespaceFilename($namespace).'/Db');
-  if (!file_exists('output/src/app/Controllers')) mkdir('output/src/app/Controllers');
-  if (!file_exists('output/src/app/Controllers/v1')) mkdir('output/src/app/Controllers/v1');
-  if (!file_exists('output/src/app/Controllers/v1'.namespaceFilename($namespace))) mkdir('output/src/app/Controllers/v1'.namespaceFilename($namespace));
-  if (!file_exists('output/tests')) mkdir('output/tests');
-  if (!file_exists('output/tests'.namespaceFilename($namespace))) mkdir('output/tests'.namespaceFilename($namespace));
+  @mkdir('output/src/app/Models'.namespaceFilename($namespace).'/Db',0755,true);
+  @mkdir('output/src/app/Controllers'.namespaceFilename($namespace),0755,true);
+  @mkdir('output/tests'.namespaceFilename($namespace),0755,true);
 
   if (count($database->getTables())>0) {
     # Options array
@@ -187,9 +204,9 @@ function formatNamespace(string $namespace)
       # Generate Conrollers
       $controller = new \Controller($table, $options);
       $filenameController = $table->getClassName().'Controller.php';
-      echo ' > Controller: /src/app/Controllers/v1'.formatNamespace($namespace).'/'.$filenameController.PHP_EOL;
+      echo ' > Controller: /src/app/Controllers'.formatNamespace($namespace).'/'.$filenameController.PHP_EOL;
       $source = $controller->getPhpSource();
-      file_put_contents('Output/src/app/Controllers/v1'.namespaceFilename($namespace).'/'.$filenameController, $source );
+      file_put_contents('Output/src/app/Controllers'.namespaceFilename($namespace).'/'.$filenameController, $source );
 
       # Generate tests
       $test = new \Test($table, $options);

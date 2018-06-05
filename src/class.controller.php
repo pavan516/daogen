@@ -84,7 +84,7 @@ class Controller
     $s .= "#########################################################################################".PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= 'namespace App\\Controllers\\v1'.$this->namespace.';'.PHP_EOL;
+    $s .= 'namespace App\\Controllers'.$this->namespace.';'.PHP_EOL;
     $s .= PHP_EOL;
     $s .= 'use \\Spin\\Core\\Controller;'.PHP_EOL;
     // Do we custom extend controllers??
