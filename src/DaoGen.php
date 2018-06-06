@@ -208,7 +208,7 @@ function formatNamespace(string $namespace)
       $source = $controller->getPhpSource();
       file_put_contents('Output/src/app/Controllers'.namespaceFilename($namespace).'/'.$filenameController, $source );
 
-      # Generate tests
+      # Generate Entity tests
       $test = new \Test($table, $options);
       $filenameTest = $table->getClassName().'EntityTest.php';
       echo ' > Test:       /tests'.formatNamespace($namespace).'/'.$filenameTest.PHP_EOL;
@@ -216,9 +216,10 @@ function formatNamespace(string $namespace)
       file_put_contents('Output/tests'.namespaceFilename($namespace).'/'.$filenameTest, $source );
     }
 
-    # Copy AbstractBase* files to output
-    copy ('AbstractBaseDao.php',    'Output/src/app/Models/AbstractBaseDao.php');
-    copy ('AbstractBaseEntity.php', 'Output/src/app/Models/AbstractBaseEntity.php');
+    # Copy Abstract* files
+    copy ('Abstracts/AbstractRestController.php', 'Output/src/app/Controllers/AbstractRestController.php');
+    copy ('Abstracts/AbstractBaseDao.php',        'Output/src/app/Models/AbstractBaseDao.php');
+    copy ('Abstracts/AbstractBaseEntity.php',     'Output/src/app/Models/AbstractBaseEntity.php');
   }
 
   $t2 = microtime(true);
