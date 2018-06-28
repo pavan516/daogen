@@ -97,6 +97,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
    */
   public function fetchCustom(string $sql,array $params=[]): array
   {
+    # If we have no connection ..
+    if (is_null($this->getConnection())) return [];
+
     # Replace {table} with the table-name
     $sql = str_replace('{table}', $this->getTable(), $sql);
 
@@ -144,6 +147,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
    */
   public function fetchBy(string $field, $value)
   {
+    # If we have no connection ..
+    if (is_null($this->getConnection())) return null;
+
     if ($item = $this->cacheGetItemByField($field,$value)) return $item;
 
     $item =
@@ -285,6 +291,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
    */
   public function fetchCount(string $field,array $params=[]): array
   {
+    # If we have no connection ..
+    if (is_null($this->getConnection())) return [];
+
     $sql = 'SELECT COUNT('.$field.') AS count FROM '.$this->getTable();
 
     if (count($params)>0) {

@@ -139,6 +139,10 @@ class Dao
     $s .= '   */'.PHP_EOL;
     $s .= '  public function fetchAll(): array'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
+    $s .= PHP_EOL;
+    $s .= '    # If we have no connection ..'.PHP_EOL;
+    $s .= '    if (is_null($this->getConnection())) return [];'.PHP_EOL;
+    $s .= PHP_EOL;
     $s .= '    if ($items = $this->cacheGetAll()) return $items;'.PHP_EOL;
     $s .=  PHP_EOL;
     $s .= '    $items = '.PHP_EOL;
@@ -161,6 +165,10 @@ class Dao
     $s .= '   */'.PHP_EOL;
     $s .= '  public function fetchByKeywords(array $keywords=[]): array'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
+    $s .= PHP_EOL;
+    $s .= '    # If we have no connection ..'.PHP_EOL;
+    $s .= '    if (is_null($this->getConnection())) return [];'.PHP_EOL;
+    $s .= PHP_EOL;
     $s .= '    $where = \'\';'.PHP_EOL;
     $s .= '    $order = \'\';'.PHP_EOL;
     $s .= '    $limit = \'\';'.PHP_EOL;
