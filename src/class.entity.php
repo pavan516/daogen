@@ -67,8 +67,9 @@ class Entity
     $s .= ' *'.PHP_EOL;
     $s .= ' *  Generated with DaoGen v'.$daoGenVersion.PHP_EOL;
     $s .= ' *'.PHP_EOL;
-    $s .= ' * @since    '.(new \DateTime('now',new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z').PHP_EOL;
-    $s .= ' * @package  '.$this->package.PHP_EOL;
+    $s .= ' * @since     '.(new \DateTime('now',new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z').PHP_EOL;
+    $s .= ' * @package   '.$this->package.PHP_EOL;
+    $s .= ' * @namespace '.$this->namespace.PHP_EOL;
     $s .= ' */'.PHP_EOL;
     $s .= '#########################################################################################'.PHP_EOL;
 
