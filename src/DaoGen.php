@@ -10,7 +10,7 @@
 
 ##############################################################################################################
 
-$daoGenVersion = '0.5.12';
+$daoGenVersion = '0.5.13';
 
 require_once 'class.database.php';
 require_once 'class.entity.php';
@@ -118,7 +118,7 @@ function formatNamespace(string $namespace)
 <h3>Database or Table DDL (MySql & Firebird accepted)</h3>
 <p>
  <form method="post" action="DaoGen.php">
-  
+
   <table>
     <thead>
     </thead>

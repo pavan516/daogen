@@ -53,6 +53,7 @@ class Database
 
       # Add a table
       $this->tables[] = new \Table($this, $table_ddl, $options);
+
       # Remove the just processed table
       $ddl = substr($ddl, mb_strlen($table_ddl));
     }

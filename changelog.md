@@ -1,5 +1,8 @@
 # DaoGen Changelog
 
+## 0.5.13
+* Added parsing of MSSQL DDL
+
 ## 0.5.10
 * Fixed bug in namesapce strings for all php output files
 

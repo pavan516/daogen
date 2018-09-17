@@ -30,17 +30,22 @@ class Table
    */
   public function __construct($database, string $ddl='', array $options=[])
   {
+    # Replace some chars
     $ddl = str_replace('`','',$ddl);
+    $ddl = str_replace('[','',$ddl);
+    $ddl = str_replace(']','',$ddl);
 
     $this->namespace = $this->formatNamespace($options['namespace'] ?? '');
     $this->database = $database;
 
     # Store the Tables full name
-    preg_match('/CREATE TABLE (\w*)/',trim($ddl),$match);
-    $this->tableName = strtolower($match[1] ?? '');
+    preg_match('/CREATE TABLE (\S*)\(/',trim($ddl),$match);
+    $this->tableName = trim(strtolower($match[1] ?? ''));
+    $_tableName = str_replace('_',' ',$this->tableName);
+    $_tableName = str_replace('.',' ',$_tableName);
 
     # Convert _ to Spaces, UCWords it and remove the spaces
-    $this->className = str_replace(' ','',ucwords(str_replace('_',' ',$this->tableName)));
+    $this->className = str_replace(' ','',ucwords($_tableName));
 
     # Make Plural words Singular
     $inflect = new Inflect();
