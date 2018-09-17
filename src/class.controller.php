@@ -65,8 +65,9 @@ class Controller
     $s .= " *".PHP_EOL;
     $s .= " *  Generated with DaoGen v".$daoGenVersion.PHP_EOL;
     $s .= " *".PHP_EOL;
-    $s .= ' * @since    '.(new \DateTime('now',new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z').PHP_EOL;
-    $s .= " * @package  ".$this->package.PHP_EOL;
+    $s .= ' * @since     '.(new \DateTime('now',new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z').PHP_EOL;
+    $s .= ' * @package   '.$this->package.PHP_EOL;
+    $s .= ' * @namespace '.$this->namespace.PHP_EOL;
     $s .= " */".PHP_EOL;
     $s .= "#########################################################################################".PHP_EOL;
 
@@ -207,7 +208,24 @@ class Controller
     $s .= '    if (count($this->body)==0) {'.PHP_EOL;
     $s .= '      return responseJsonError(\'Bad request\',\'Invalid post body\',400);'.PHP_EOL;
     $s .= '    }'.PHP_EOL;
+    if ($this->table->hasField('code')) {
+      $s .= PHP_EOL;
+      $s .= '    # Verify code'.PHP_EOL;
+      $s .= '    if (empty($this->body[\'code\'] ?? \'\')) {'.PHP_EOL;
+      $s .= '      return responseJsonError(\'Bad request\',\'{code} must be specified\',400);'.PHP_EOL;
+      $s .= '    }'.PHP_EOL;
+    }
+    if ($this->table->hasField('name')) {
+      $s .= PHP_EOL;
+      $s .= '    # Verify name'.PHP_EOL;
+      $s .= '    if (empty($this->body[\'name\'] ?? \'\')) {'.PHP_EOL;
+      $s .= '      return responseJsonError(\'Bad request\',\'{name} must be specified\',400);'.PHP_EOL;
+      $s .= '    }'.PHP_EOL;
+    }
     $s .= PHP_EOL;
+    $s .= '    // .. there are more fields that need verification?'.PHP_EOL;
+    $s .= PHP_EOL;
+
     $s .= '    return null;'.PHP_EOL;
     $s .= '  }'.PHP_EOL;
     $s .= PHP_EOL;
@@ -232,28 +250,15 @@ class Controller
     $s .= '    $entity = new '.$this->table->getClassName().'Entity($this->body);'.PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= '    # Verify fields'.PHP_EOL;
-    if ($this->table->hasField('code')) {
-      $s .= '    if (empty($entity->getCode())) {'.PHP_EOL;
-      $s .= '      return responseJsonError(\'Bad request\',\'{code} must be specified\',400);'.PHP_EOL;
-      $s .= '    }'.PHP_EOL;
-    }
-    if ($this->table->hasField('name')) {
-      $s .= '    if (empty($entity->getName())) {'.PHP_EOL;
-      $s .= '      return responseJsonError(\'Bad request\',\'{name} must be specified\',400);'.PHP_EOL;
-      $s .= '    }'.PHP_EOL;
-    }
-    $s .= '    // .. there are more fields that need verification?'.PHP_EOL;
-    $s .= PHP_EOL;
-
-    $s .= '    # Check if a previous the item exists (Fields `UUID` or `CODE`)'.PHP_EOL;
     if ($this->table->hasField('uuid')) {
+      $s .= '    # Check if a previous the item exists'.PHP_EOL;
       $s .= '    $x = (new '.$this->table->getClassName().'Dao())->fetchBy(\'uuid\',$entity->getUuid());'.PHP_EOL;
       $s .= '    if ( isset($x) ) {'.PHP_EOL;
       $s .= '      return responseJsonError(\'Bad request\',\'An item with {uuid} already exists\',400);'.PHP_EOL;
       $s .= '    }'.PHP_EOL;
     } else
     if ($this->table->hasField('code')) {
+      $s .= '    # Check if a previous the item exists'.PHP_EOL;
       $s .= '    $x = (new '.$this->table->getClassName().'Dao())->fetchBy(\'code\',$entity->getCode());'.PHP_EOL;
       $s .= '    if ( isset($x) ) {'.PHP_EOL;
       $s .= '      return responseJsonError(\'Bad request\',\'An item with {code} already exists\',400);'.PHP_EOL;
