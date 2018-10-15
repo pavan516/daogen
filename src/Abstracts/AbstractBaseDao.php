@@ -294,7 +294,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
     # If we have no connection ..
     if (is_null($this->getConnection())) return [];
 
-    $sql = 'SELECT COUNT('.$field.') AS count FROM '.$this->getTable();
+    $sql = 'SELECT COUNT('.$field.') AS cnt FROM '.$this->getTable();
 
     if (count($params)>0) {
       $sql .=' WHERE ';
@@ -326,7 +326,8 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
       logger()->critical($e->getMessage(),['rid'=>app('requestId'),'trace'=>$e->getTraceAsString()]);
       $this->rollback();
     }
-    return $rows;
+
+    return (int) ($rows[0]['cnt']) ?? 0;
   }
 
   /**

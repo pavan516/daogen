@@ -1,5 +1,8 @@
 # DaoGen Changelog
 
+## 0.5.14
+* fetchCount() fixed in AbstractBaseDao
+
 ## 0.5.13
 * Added parsing of MSSQL DDL
 

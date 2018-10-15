@@ -69,8 +69,15 @@ class Field
       $s = stristr($fieldDef, 'DEFAULT');
       if (strpos($fieldDef, 'ON ') !== false)
           $s = stristr($s, 'ON ', true);
-      preg_match('/DEFAULT (.*)/',trim($s),$match);
-      $this->default = $match[1] ?? '';
+      preg_match('/ DEFAULT (.*)/',trim($s),$match);
+
+      # Filter away any ( or ) chars
+      $this->default = str_replace(['(',')'],'',$match[1] ?? '');
+
+      # if the text contains CONVERT make it null (MSSQL strange thing)
+      if (strpos($this->default, 'CONVERT') !== false) {
+        $this->default = 'null';
+      }
     }
 
     # Check for NOT NULL
