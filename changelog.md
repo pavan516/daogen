@@ -1,5 +1,8 @@
 # DaoGen Changelog
 
+## 0.5.15
+* PREG Match fix for MySQL table names
+
 ## 0.5.14
 * fetchCount() fixed in AbstractBaseDao
 
