@@ -39,7 +39,10 @@ class Table
     $this->database = $database;
 
     # Store the Tables full name
-    preg_match('/CREATE TABLE (.*)\s\(/',trim($ddl),$match);
+    preg_match('/CREATE TABLE (.*)\s*\(/',trim($ddl),$match);
+
+error_log(print_r($match,true));
+
     $this->tableName = trim(strtolower($match[1] ?? ''));
     $_tableName = str_replace('_',' ',$this->tableName);
     $_tableName = str_replace('.',' ',$_tableName);

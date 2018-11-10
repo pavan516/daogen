@@ -23,7 +23,7 @@ interface AbstractBaseDaoInterface
   function fetchBy(string $field, $value);
   function execCustom(string $sql, array $params=[]): bool;
   function execCustomGetLastId(string $sql, array $params=[]): int;
-  function fetchCount(string $field,array $params=[]): array;
+  function fetchCount(string $field,array $params=[]): int;
 
   function insert(AbstractBaseEntity &$item): bool;
   function update(AbstractBaseEntity $item): bool;
@@ -287,9 +287,9 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
    * @param      string  $field   Field to count
    * @param      array   $params  [description]
    *
-   * @return     array
+   * @return     int
    */
-  public function fetchCount(string $field,array $params=[]): array
+  public function fetchCount(string $field,array $params=[]): int
   {
     # If we have no connection ..
     if (is_null($this->getConnection())) return [];
