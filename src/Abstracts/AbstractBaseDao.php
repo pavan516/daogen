@@ -21,6 +21,7 @@ interface AbstractBaseDaoInterface
   function makeEntity(array $fields=[]): AbstractBaseEntity;
   function fetchCustom(string $sql,array $params=[]): array;
   function fetchBy(string $field, $value);
+  function fetchAllBy(string $field, $value);
   function execCustom(string $sql, array $params=[]): bool;
   function execCustomGetLastId(string $sql, array $params=[]): int;
   function fetchCount(string $field,array $params=[]): int;
@@ -31,6 +32,13 @@ interface AbstractBaseDaoInterface
 
   function getConnection(string $connectionName='');
   function setConnection(?PdoConnectionInterface $connection);
+
+  function beginTransaction();
+  function commit();
+  function rollback();
+
+  function rawQuery(string $sql, array $params=[]);
+  function rawExec(string $sql, array $params=[]);
 
   function getTable(): string;
   function setTable(string $table);
