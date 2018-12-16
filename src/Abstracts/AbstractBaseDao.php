@@ -113,7 +113,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
 
     # Default to no rows returned
     $rows = [];
-    try {
+    // try {
       $autoCommit = $this->beginTransaction();
       # Prepare
       if ($sth=$this->getConnection()->prepare($sql)) {
@@ -136,11 +136,11 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
       }
       if ($autoCommit) $this->commit();
 
-    } catch (\Exception $e) {
-      logger()->critical($e->getMessage(),['rid'=>app('requestId'),'trace'=>$e->getTraceAsString()]);
-      $this->rollback();
+    // } catch (\Exception $e) {
+    //   logger()->critical($e->getMessage(),['rid'=>app('requestId'),'sql'=>$sql,'params'=>$params,'trace'=>$e->getTraceAsString()]);
+    //   $this->rollback();
 
-    }
+    // }
 
     return $rows;
   }
@@ -205,7 +205,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
 
     # Default result
     $result = false;
-    try {
+    // try {
       $autoCommit = $this->beginTransaction();
       if ($sth = $this->getConnection()->prepare($sql))
       {
@@ -222,11 +222,11 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
       }
       if ($autoCommit) $this->commit();
 
-    } catch (\Exception $e) {
-      logger()->critical($e->getMessage(),['rid'=>app('requestId'),'trace'=>$e->getTraceAsString()]);
-      $this->rollback();
+    // } catch (\Exception $e) {
+    //   logger()->critical($e->getMessage(),['rid'=>app('requestId'),'sql'=>$sql,'params'=>$params,'trace'=>$e->getTraceAsString()]);
+    //   $this->rollback();
 
-    }
+    // }
 
     return $result;
   }
@@ -246,7 +246,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
 
     # Default result
     $result = 0;
-    try {
+    // try {
       $autoCommit = $this->beginTransaction();
 
       if ( strcasecmp($this->getConnection()->getDriver(),'mysql')!=0 ) {
@@ -280,11 +280,11 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
       }
       if ($autoCommit) $this->commit();
 
-    } catch (\Exception $e) {
-      logger()->critical($e->getMessage(),['rid'=>app('requestId'),'trace'=>$e->getTraceAsString()]);
-      $this->rollback();
+    // } catch (\Exception $e) {
+    //   logger()->critical($e->getMessage(),['rid'=>app('requestId'),'sql'=>$sql,'params'=>$params,'trace'=>$e->getTraceAsString()]);
+    //   $this->rollback();
 
-    }
+    // }
 
     return (int) $result;
   }
@@ -314,7 +314,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
 
     # Default to no rows returned
     $rows = [];
-    try {
+    // try {
       $autoCommit = $this->beginTransaction();
       # Prepare
       if ($sth=$this->getConnection()->prepare($sql)) {
@@ -330,10 +330,10 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
       }
       if ($autoCommit) $this->commit();
 
-    } catch (\Exception $e) {
-      logger()->critical($e->getMessage(),['rid'=>app('requestId'),'trace'=>$e->getTraceAsString()]);
-      $this->rollback();
-    }
+    // } catch (\Exception $e) {
+    //   logger()->critical($e->getMessage(),['rid'=>app('requestId'),'sql'=>$sql,'params'=>$params,'trace'=>$e->getTraceAsString()]);
+    //   $this->rollback();
+    // }
 
     return (int) ($rows[0]['cnt']) ?? 0;
   }

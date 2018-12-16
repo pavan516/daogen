@@ -1,5 +1,8 @@
 # DaoGen Changelog
 
+## 0.5.16
+* Removed Exception catching/logging in AbstactBaseDao methods
+
 ## 0.5.15
 * PREG Match fix for MySQL table names
 
