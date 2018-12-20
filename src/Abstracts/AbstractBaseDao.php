@@ -23,6 +23,7 @@ interface AbstractBaseDaoInterface
   function fetchBy(string $field, $value);
   function fetchAllBy(string $field, $value);
   function execCustom(string $sql, array $params=[]): bool;
+  function execCustomRowCount(string $sql, array $params=[]): int;
   function execCustomGetLastId(string $sql, array $params=[]): int;
   function fetchCount(string $field,array $params=[]): int;
 
@@ -227,6 +228,43 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
     //   $this->rollback();
 
     // }
+
+    return $result;
+  }
+
+  /**
+   * Execute $sql with $params and return number of rows affected
+   *
+   * @param   string  $sql     [description]
+   * @param   array   $params  [description]
+   *
+   * @return  int     Number of rows affected. -1 = failure
+   */
+  public function execCustomRowCount(string $sql, array $params=[]): int
+  {
+    # Replace {table} with the table-name
+    $sql = str_replace('{table}', $this->getTable(), $sql);
+
+    # Default result
+    $result = -1; // fail
+
+    $autoCommit = $this->beginTransaction();
+    if ($sth = $this->getConnection()->prepare($sql))
+    {
+      # Binds
+      foreach ($params as $bind=>$value) {
+        if (!is_null($value)) {
+          $sth->bindValue(':'.ltrim($bind,':'), $value);
+        } else {
+          $sth->bindValue(':'.ltrim($bind,':'), $value, \PDO::PARAM_NULL);
+        }
+      }
+      # Execute
+      if ($sth->execute()) {
+        $result = $sth->rowCount();
+      }
+    }
+    if ($autoCommit) $this->commit();
 
     return $result;
   }
