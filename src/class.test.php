@@ -89,7 +89,7 @@ class Test
     $s .= ' /**'.PHP_EOL;
     $s .= '   * Setup Test'.PHP_EOL;
     $s .= '   */'.PHP_EOL;
-    $s .= '  public function setup()'.PHP_EOL;
+    $s .= '  public function setup(): void'.PHP_EOL;
     $s .= '  {'.PHP_EOL;
     $s .= '    global $app;'.PHP_EOL;
     $s .= PHP_EOL;
