@@ -178,6 +178,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
           try {
             # Execute query
             $result = $sth->execute();
+            break;
 
           } catch (\Exception $e) {
             # Do we have a DeadLock ??
@@ -243,6 +244,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
             if ($sth->execute()) {
               $result = $sth->rowCount();
             }
+            break;
 
           } catch (\Exception $e) {
             # Do we have a DeadLock ??
@@ -322,6 +324,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
                 $result = $this->getConnection()->lastInsertId();
               }
             }
+            break;
 
           } catch (\Exception $e) {
             # Do we have a DeadLock ??
