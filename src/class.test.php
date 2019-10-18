@@ -112,7 +112,8 @@ class Test
     $s .= '  }'.PHP_EOL;
     $s .= PHP_EOL;
 
-    $s .= '} // EOC'.PHP_EOL;
+    $s .= '}'.PHP_EOL;
+    $s .= PHP_EOL;
 
     return $s;
   }
