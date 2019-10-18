@@ -10,10 +10,8 @@
  *   "OFFSET x ROWS FETCH NEXT y ROWS ONLY;"  -- https://docs.oracle.com/database/121/SQLRF/statements_10002.htm#SQLRF01702
  *
  */
-##############################################################################################################
 
-class Dao
-{
+class Dao {
   protected $table;
   protected $type;
   protected $options;
@@ -46,7 +44,7 @@ class Dao
   protected function formatNamespace(string $namespace)
   {
     if (!empty($namespace)) {
-      $namespace = '\\' . trim($namespace,'\\/');
+      $namespace = '\\' . \trim($namespace,'\\/');
     }
 
     return $namespace;

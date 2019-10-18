@@ -10,53 +10,8 @@ namespace App\Models;
 
 use \Spin\Database\PdoConnection;
 use \Spin\Database\PdoConnectionInterface;
-
+use \App\Models\AbstractBaseDaoInterface;
 use \App\Models\AbstractBaseEntity;
-
-/**
- * AbstraceBaseDao Interface
- */
-interface AbstractBaseDaoInterface
-{
-  function makeEntity(array $fields=[]): AbstractBaseEntity;
-  function fetchCustom(string $sql,array $params=[]): array;
-  function fetchBy(string $field, $value);
-  function fetchAllBy(string $field, $value);
-  function execCustom(string $sql, array $params=[]): bool;
-  function execCustomRowCount(string $sql, array $params=[]): int;
-  function execCustomGetLastId(string $sql, array $params=[]): int;
-  function fetchCount(string $field,array $params=[]): int;
-
-  function insert(AbstractBaseEntity &$item): bool;
-  function update(AbstractBaseEntity $item): bool;
-  function delete(AbstractBaseEntity &$item): bool;
-
-  function getConnection(string $connectionName='');
-  function setConnection(?PdoConnectionInterface $connection);
-
-  function beginTransaction();
-  function commit();
-  function rollback();
-
-  function rawQuery(string $sql, array $params=[]);
-  function rawExec(string $sql, array $params=[]);
-
-  function getTable(): string;
-  function setTable(string $table);
-  function getCacheTTL(): int;
-  function setCacheTTL(int $cacheTTL=-1);
-
-  # Protected Cache methods
-  // protected function cacheSetItem(AbstractBaseEntity $item, $ttl=null )
-  // protected function cacheGetItemByField(string $field, string $value)
-  // protected function cacheGetById(string $id)
-  // protected function cacheGetByCode(string $code)
-  // protected function cacheGetByUuid(string $uuid)
-  // protected function cacheSetAll(array $items, $ttl=null)
-  // protected function cacheClearAll()
-  // protected function cacheGetAll()
-  // protected function cacheDelete(AbstractBaseEntity $item)
-}
 
 /**
  * AbstraceBaseDao Class
@@ -110,22 +65,18 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
     if (is_null($this->getConnection())) return [];
 
     # Replace {table} with the table-name
-    $sql = str_replace('{table}', $this->getTable(), $sql);
+    $sql = \str_replace('{table}', $this->getTable(), $sql);
 
     # Default to no rows returned
     $rows = [];
-    // try {
+
+    try {
       $autoCommit = $this->beginTransaction();
       # Prepare
       if ($sth=$this->getConnection()->prepare($sql)) {
         # Binds
-        foreach ($params as $bind=>$value) {
-          if (!is_null($value)) {
-            $sth->bindValue(':'.ltrim($bind,':'), $value);
-          } else {
-            $sth->bindValue(':'.ltrim($bind,':'), $value, \PDO::PARAM_NULL);
-          }
-        }
+        $this->setBinds($sth,$params);
+
         # Exec
         if ($sth->execute()) {
           # Loop resulting rows
@@ -137,11 +88,16 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
       }
       if ($autoCommit) $this->commit();
 
-    // } catch (\Exception $e) {
-    //   logger()->critical($e->getMessage(),['rid'=>app('requestId'),'sql'=>$sql,'params'=>$params,'trace'=>$e->getTraceAsString()]);
-    //   $this->rollback();
+    } catch (\Exception $e) {
+      # Rollback the current transaction
+      $this->rollback();
 
-    // }
+      # Log the exception
+      \logger()->critical($e->getMessage(),['sql'=>$sql,'params'=>$params,'trace'=>$e->getTraceAsString()]);
+
+      # Rethrow the exception so calling function can handle it
+      throw $e;
+    }
 
     return $rows;
   }
@@ -163,8 +119,8 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
 
     $item =
       $this->fetchCustom(
-        'SELECT * FROM {table} WHERE '.$field.' = :'.strtoupper($field),
-        [':'.strtoupper($field) => $value]
+        'SELECT * FROM {table} WHERE '.$field.' = :'.\strtoupper($field),
+        [':'.\strtoupper($field) => $value]
       )[0] ?? null;
 
     if ($item) $this->cacheSetItem($item);
@@ -184,8 +140,8 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   {
     $items =
       $this->fetchCustom(
-        'SELECT * FROM {table} WHERE '.$field.' = :'.strtoupper($field),
-        [':'.strtoupper($field) => $value]
+        'SELECT * FROM {table} WHERE '.$field.' = :'.\strtoupper($field),
+        [':'.\strtoupper($field) => $value]
       ) ?? [];
 
     return $items;
@@ -202,32 +158,52 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   public function execCustom(string $sql, array $params=[]): bool
   {
     # Replace {table} with the table-name
-    $sql = str_replace('{table}', $this->getTable(), $sql);
+    $sql = \str_replace('{table}', $this->getTable(), $sql);
 
     # Default result
     $result = false;
-    // try {
+
+    $_retry = 0;
+    $_retryWait = 250; // milliseconds
+    $_maxRetries = 5;
+
+    try {
       $autoCommit = $this->beginTransaction();
-      if ($sth = $this->getConnection()->prepare($sql))
-      {
+      if ($sth = $this->getConnection()->prepare($sql)) {
         # Binds
-        foreach ($params as $bind=>$value) {
-          if (!is_null($value)) {
-            $sth->bindValue(':'.ltrim($bind,':'), $value);
-          } else {
-            $sth->bindValue(':'.ltrim($bind,':'), $value, \PDO::PARAM_NULL);
+        $this->setBinds($sth,$params);
+
+        # Retry for "DEADLOCK" exceptions
+        while (0==0) {
+          try {
+            # Execute query
+            $result = $sth->execute();
+
+          } catch (\Exception $e) {
+            # Do we have a DeadLock ??
+            if ( \stripos($e->getMessage(),'deadlock')!==false ) {
+              \usleep(($_retryWait+($_retry*$_retryWait)) * 1000); // Wait a little before trying again
+              $_retry++; // Increment retry counter
+              if ($_retry > $_maxRetries) break;
+            } else {
+              throw $e; // rethrow the error, was something else than a deadlock
+            }
           }
-        }
-        # Execute
-        $result = $sth->execute();
+        } // while
+
       }
       if ($autoCommit) $this->commit();
 
-    // } catch (\Exception $e) {
-    //   logger()->critical($e->getMessage(),['rid'=>app('requestId'),'sql'=>$sql,'params'=>$params,'trace'=>$e->getTraceAsString()]);
-    //   $this->rollback();
+    } catch (\Exception $e) {
+      # Rollback the current transaction
+      $this->rollback();
 
-    // }
+      # Log the exception
+      \logger()->critical($e->getMessage(),['sql'=>$sql,'params'=>$params,'trace'=>$e->getTraceAsString()]);
+
+      # Rethrow the exception so calling function can handle it
+      throw $e;
+    }
 
     return $result;
   }
@@ -243,28 +219,56 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   public function execCustomRowCount(string $sql, array $params=[]): int
   {
     # Replace {table} with the table-name
-    $sql = str_replace('{table}', $this->getTable(), $sql);
+    $sql = \str_replace('{table}', $this->getTable(), $sql);
 
     # Default result
     $result = -1; // fail
 
-    $autoCommit = $this->beginTransaction();
-    if ($sth = $this->getConnection()->prepare($sql))
-    {
-      # Binds
-      foreach ($params as $bind=>$value) {
-        if (!is_null($value)) {
-          $sth->bindValue(':'.ltrim($bind,':'), $value);
-        } else {
-          $sth->bindValue(':'.ltrim($bind,':'), $value, \PDO::PARAM_NULL);
-        }
+    $_retry = 0;
+    $_retryWait = 250; // milliseconds
+    $_maxRetries = 5;
+
+    try {
+
+      $autoCommit = $this->beginTransaction();
+      if ($sth = $this->getConnection()->prepare($sql))
+      {
+        # Binds
+        $this->setBinds($sth,$params);
+
+        # Retry for "DEADLOCK" exceptions
+        while (0==0) {
+          try {
+            # Execute query
+            if ($sth->execute()) {
+              $result = $sth->rowCount();
+            }
+
+          } catch (\Exception $e) {
+            # Do we have a DeadLock ??
+            if ( \stripos($e->getMessage(),'deadlock')!==false ) {
+              \usleep(($_retryWait+($_retry*$_retryWait)) * 1000); // Wait a little before trying again
+              $_retry++; // Increment retry counter
+              if ($_retry > $_maxRetries) break;
+            } else {
+              throw $e; // rethrow the error, was something else than a deadlock
+            }
+          }
+        } // while
+
       }
-      # Execute
-      if ($sth->execute()) {
-        $result = $sth->rowCount();
-      }
+      if ($autoCommit) $this->commit();
+
+    } catch (\Exception $e) {
+      # Rollback the current transaction
+      $this->rollback();
+
+      # Log the exception
+      \logger()->critical($e->getMessage(),['sql'=>$sql,'params'=>$params,'trace'=>$e->getTraceAsString()]);
+
+      # Rethrow the exception so calling function can handle it
+      throw $e;
     }
-    if ($autoCommit) $this->commit();
 
     return $result;
   }
@@ -280,14 +284,19 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   public function execCustomGetLastId(string $sql, array $params=[]): int
   {
     # Replace {table} with the table-name
-    $sql = str_replace('{table}', $this->getTable(), $sql);
+    $sql = \str_replace('{table}', $this->getTable(), $sql);
 
-    # Default result
+    # Defaults
     $result = 0;
-    // try {
+
+    $_retry = 0;
+    $_retryWait = 250; // milliseconds
+    $_maxRetries = 5;
+
+    try {
       $autoCommit = $this->beginTransaction();
 
-      if ( strcasecmp($this->getConnection()->getDriver(),'mysql')!=0 ) {
+      if ( \strcasecmp($this->getConnection()->getDriver(),'mysql')!=0 ) {
         # Firebird, PostGreSQL and Oracle support RETURNING clauses
         $sql .= ' RETURNING id';
       } else {
@@ -297,32 +306,48 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
       if ($sth = $this->getConnection()->prepare($sql))
       {
         # Binds
-        foreach ($params as $bind=>$value) {
-          if (!is_null($value)) {
-            $sth->bindValue(':'.ltrim($bind,':'), $value);
-          } else {
-            $sth->bindValue(':'.ltrim($bind,':'), $value, \PDO::PARAM_NULL);
+        $this->setBinds($sth,$params);
+
+        # Retry for "DEADLOCK" exceptions
+        while (0==0) {
+          try {
+            # Execute query
+            if ($sth->execute()) {
+              if ( \strcasecmp($this->getConnection()->getDriver(),'mysql')!=0 ) {
+                # Firebird, PostGreSQL, Oracle, CockroachDb support RETURNING clauses
+                $row = $sth->fetch(\PDO::FETCH_ASSOC);
+                $result = \array_change_key_case($row,\CASE_LOWER)['id'] ?? 0;
+              } else {
+                # MySql driver, not supporting RETURNING statements, instead uses LastInsertId()
+                $result = $this->getConnection()->lastInsertId();
+              }
+            }
+
+          } catch (\Exception $e) {
+            # Do we have a DeadLock ??
+            if ( \stripos($e->getMessage(),'deadlock')!==false ) {
+              \usleep(($_retryWait+($_retry*$_retryWait)) * 1000); // Wait a little before trying again
+              $_retry++; // Increment retry counter
+              if ($_retry > $_maxRetries) break;
+            } else {
+              throw $e; // rethrow the error, was something else than a deadlock
+            }
           }
-        }
-        # Execute
-        if ($sth->execute()) {
-          if ( strcasecmp($this->getConnection()->getDriver(),'mysql')!=0 ) {
-            # Firebird, PostGreSQL, Oracle, CockroachDb support RETURNING clauses
-            $row = $sth->fetch(\PDO::FETCH_ASSOC);
-            $result = array_change_key_case($row,CASE_LOWER)['id'] ?? 0;
-          } else {
-            # MySql driver, not supporting RETURNING statements, instead uses LastInsertId()
-            $result = $this->getConnection()->lastInsertId();
-          }
-        }
+        } // while
+
       }
       if ($autoCommit) $this->commit();
 
-    // } catch (\Exception $e) {
-    //   logger()->critical($e->getMessage(),['rid'=>app('requestId'),'sql'=>$sql,'params'=>$params,'trace'=>$e->getTraceAsString()]);
-    //   $this->rollback();
+    } catch (\Exception $e) {
+      # Rollback the current transaction
+      $this->rollback();
 
-    // }
+      # Log the exception
+      \logger()->critical($e->getMessage(),['sql'=>$sql,'params'=>$params,'trace'=>$e->getTraceAsString()]);
+
+      # Rethrow the exception so calling function can handle it
+      throw $e;
+    }
 
     return (int) $result;
   }
@@ -342,12 +367,12 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
 
     $sql = 'SELECT COUNT('.$field.') AS cnt FROM '.$this->getTable();
 
-    if (count($params)>0) {
+    if (\count($params)>0) {
       $sql .=' WHERE ';
       foreach ($params as $param => $value) {
-        $sql .= $param.' = :'.strtoupper($param).' AND ';
+        $sql .= $param.' = :'.\strtoupper($param).' AND ';
       }
-      $sql = substr($sql,0,-5); // rtrim has a bug with ' AND ' at the end!? Confirmed in PHP v7.1.1
+      $sql = \substr($sql,0,-5); // rtrim has a bug with ' AND ' at the end!? Confirmed in PHP v7.1.1
     }
 
     # Default to no rows returned
@@ -358,7 +383,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
       if ($sth=$this->getConnection()->prepare($sql)) {
         # Binds
         foreach ($params as $bind=>$value) {
-          $sth->bindValue(strtoupper(':'.$bind), $value);
+          $sth->bindValue(\strtoupper(':'.$bind), $value);
         }
         # Exec
         if ($sth->execute()) {
@@ -416,12 +441,12 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
     if (is_null($ttl))
       $ttl = $this->getCacheTTL();
 
-    if ($ttl>=0 && cache() && $item) {
+    if ($ttl>=0 && \cache() && $item) {
       # Add Item to caches
-      if (method_exists($item,'getId') && $item->getId()>0) cache()->set(static::class.':id:'.$item->getId(), $item, $ttl);
-      if (method_exists($item,'getUuid') && !empty($item->getUuid())) cache()->set(static::class.':uuid:'.$item->getUuid(), $item, $ttl);
-      if (method_exists($item,'getCode') && !empty($item->getCode())) cache()->set(static::class.':code:'.$item->getCode(), $item, $ttl);
-      if (method_exists($item,'getEmail') && !empty($item->getEmail())) cache()->set(static::class.':email:'.$item->getEmail(), $item, $ttl);
+      if (\method_exists($item,'getId') && $item->getId()>0) \cache()->set(static::class.':id:'.$item->getId(), $item, $ttl);
+      if (\method_exists($item,'getUuid') && !empty($item->getUuid())) \cache()->set(static::class.':uuid:'.$item->getUuid(), $item, $ttl);
+      if (\method_exists($item,'getCode') && !empty($item->getCode())) \cache()->set(static::class.':code:'.$item->getCode(), $item, $ttl);
+      if (\method_exists($item,'getEmail') && !empty($item->getEmail())) \cache()->set(static::class.':email:'.$item->getEmail(), $item, $ttl);
     }
 
     return true;
@@ -438,8 +463,8 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   protected function cacheGetItemByField(string $field, $value)
   {
     $cacheKey = static::class.':'.$field.':'.$value;
-    if (cache() && cache()->has($cacheKey)) {
-      return cache()->get($cacheKey);
+    if (\cache() && \cache()->has($cacheKey)) {
+      return \cache()->get($cacheKey);
     }
 
     return false;
@@ -455,8 +480,8 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   protected function cacheGetById(string $id)
   {
     $cacheKey = static::class.':id:'.$id;
-    if (cache() && cache()->has($cacheKey)) {
-      return cache()->get($cacheKey);
+    if (\cache() && \cache()->has($cacheKey)) {
+      return \cache()->get($cacheKey);
     }
 
     return false;
@@ -472,8 +497,8 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   protected function cacheGetByCode(string $code)
   {
     $cacheKey = static::class.':code:'.$code;
-    if (cache() && cache()->has($cacheKey)) {
-      return cache()->get($cacheKey);
+    if (\cache() && \cache()->has($cacheKey)) {
+      return \cache()->get($cacheKey);
     }
 
     return false;
@@ -489,8 +514,8 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   protected function cacheGetByUuid(string $uuid)
   {
     $cacheKey = static::class.':uuid:'.$uuid;
-    if (cache() && cache()->has($cacheKey)) {
-      return cache()->get($cacheKey);
+    if (\cache() && \cache()->has($cacheKey)) {
+      return \cache()->get($cacheKey);
     }
 
     return false;
@@ -509,8 +534,8 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
     if (is_null($ttl))
       $ttl = $this->getCacheTTL();
 
-    if ($ttl>=0 && cache() && count($items)>0) {
-      cache()->set(static::class.':all', $items, $ttl);
+    if ($ttl>=0 && \cache() && \count($items)>0) {
+      \cache()->set(static::class.':all', $items, $ttl);
     }
 
     return true;
@@ -523,8 +548,8 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
    */
   protected function cacheClearAll()
   {
-    if (cache()) {
-      return cache()->delete(static::class.':all');
+    if (\cache()) {
+      return \cache()->delete(static::class.':all');
     }
 
     return false;
@@ -538,8 +563,8 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   protected function cacheGetAll()
   {
     $cacheKey = static::class.':all';
-    if (cache() && $cacheKey && cache()->has($cacheKey)) {
-      return cache()->get($cacheKey);
+    if (\cache() && $cacheKey && \cache()->has($cacheKey)) {
+      return \cache()->get($cacheKey);
     }
 
     return false;
@@ -554,16 +579,37 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
    */
   protected function cacheDelete(AbstractBaseEntity $item)
   {
-    if (cache() && $item) {
+    if (\cache() && $item) {
       # Remove Individual Item
-      if (method_exists($item,'getId') && $item->getId()>0) cache()->delete(static::class.':id:'.$item->getId());
-      if (method_exists($item,'getUuid') && !empty($item->getUuid())) cache()->delete(static::class.':uuid:'.$item->getUuid());
-      if (method_exists($item,'getCode') && !empty($item->getCode())) cache()->delete(static::class.':code:'.$item->getCode());
+      if (\method_exists($item,'getId') && $item->getId()>0) \cache()->delete(static::class.':id:'.$item->getId());
+      if (\method_exists($item,'getUuid') && !empty($item->getUuid())) \cache()->delete(static::class.':uuid:'.$item->getUuid());
+      if (\method_exists($item,'getCode') && !empty($item->getCode())) \cache()->delete(static::class.':code:'.$item->getCode());
       # Clear the ALL cache
-      cache()->delete(static::class.':all');
+      \cache()->delete(static::class.':all');
     }
 
     return true;
+  }
+
+  /**
+   * Binds the Parameters to a Statement
+   *
+   * @param $statement
+   * @param array $params
+   * @return void
+   */
+  private function setBinds(\PDOStatement &$statement, array $params): void
+  {
+    # Binds
+    foreach ($params as $bind=>$value) {
+      if (!is_null($value)) {
+        $statement->bindValue(':'.\ltrim($bind,':'), $value);
+      } else {
+        $statement->bindValue(':'.\ltrim($bind,':'), $value, \PDO::PARAM_NULL);
+      }
+    }
+
+    return ;
   }
 
   /**
@@ -642,7 +688,7 @@ abstract class AbstractBaseDao implements AbstractBaseDaoInterface
   public function getConnection(string $connectionName='')
   {
     # Obtain the connection from helper function db()
-    return db( (empty($connectionName) ? $this->connectionName : $connectionName), $this->params );
+    return \db( (empty($connectionName) ? $this->connectionName : $connectionName), $this->params );
   }
 
   /**

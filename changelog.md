@@ -1,5 +1,11 @@
 # DaoGen Changelog
 
+## 0.5.17
+* DAO: Deadlock retry loops inside update/insert
+* Tests: Generates PHPUnit v8 compatible test cases
+* Root namespace for functions
+* Exception handling and logging for exceptions, rethrows exceptions for caller
+
 ## 0.5.16
 * Removed Exception catching/logging in AbstactBaseDao methods
 

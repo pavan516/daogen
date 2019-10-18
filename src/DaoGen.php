@@ -1,4 +1,5 @@
-<?php
+<?php  declare(strict_types=1);
+
 /**
  * Database Entity & Dao class generator
  *
@@ -10,7 +11,7 @@
 
 ##############################################################################################################
 
-$daoGenVersion = '0.5.16';
+$daoGenVersion = '0.5.17';
 
 require_once 'class.database.php';
 require_once 'class.entity.php';
@@ -217,9 +218,9 @@ function formatNamespace(string $namespace)
     }
 
     # Copy Abstract* files
-    copy ('Abstracts/AbstractRestController.php', 'Output/src/app/Controllers/AbstractRestController.php');
-    copy ('Abstracts/AbstractBaseDao.php',        'Output/src/app/Models/AbstractBaseDao.php');
-    copy ('Abstracts/AbstractBaseEntity.php',     'Output/src/app/Models/AbstractBaseEntity.php');
+    copy ('Abstracts/AbstractBaseDaoInterface.php', 'Output/src/app/Controllers/AbstractBaseDaoInterface.php');
+    copy ('Abstracts/AbstractBaseDao.php',          'Output/src/app/Models/AbstractBaseDao.php');
+    copy ('Abstracts/AbstractBaseEntity.php',       'Output/src/app/Models/AbstractBaseEntity.php');
   }
 
   $t2 = microtime(true);

@@ -55,7 +55,7 @@ abstract class AbstractBaseEntity
    */
   public function fromJson(string $json)
   {
-    return $this->fromArray( json_decode($arr,true) );
+    return $this->fromArray( \json_decode($arr,true) );
   }
 
   /**
@@ -65,6 +65,6 @@ abstract class AbstractBaseEntity
    */
   public function asJson(array $exclude=[], $options=JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK): string
   {
-    return json_encode($this->asArray($exclude), $options);
+    return \json_encode($this->asArray($exclude), $options);
   }
 }
