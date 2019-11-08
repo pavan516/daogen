@@ -1,5 +1,8 @@
 # DaoGen Changelog
 
+## 0.5.18
+* By default text fields are truncated to the length of the DB fieldin setXXX() method
+
 ## 0.5.17
 * DAO: Deadlock retry loops inside update/insert
 * Tests: Generates PHPUnit v8 compatible test cases
