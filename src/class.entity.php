@@ -165,7 +165,7 @@ class Entity
       $s .= '  /**'.PHP_EOL;
       $s .= '   * Get '.$field->getUcwName().PHP_EOL;
       $s .= '   *'.PHP_EOL;
-      $s .= '   * @return     '.$field->getType().PHP_EOL;
+      $s .= '   * @return     '.PHP_EOL;
       $s .= '   */'.PHP_EOL;
       $s .= '  public function get'.$field->getUcwName().'()'.PHP_EOL;
       $s .= '  {'.PHP_EOL;
